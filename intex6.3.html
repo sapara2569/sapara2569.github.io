@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>คลังผลแบบประเมินสภาพจิตใจ | โหมดแอดมิน</title>
+<link rel="icon" href="assets/logo-council.jpg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="css/stely.css">
+</head>
+<body>
+<header id="topbar" class="topbar" data-nav="admin" data-active="intex6.3"></header>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <img class="masthead-logo" src="assets/logo-school.jpg" alt="">
+    <img class="masthead-logo" src="assets/logo-council.jpg" alt="">
+    <div class="masthead-text">
+      <strong>สภานักเรียนโรงเรียนร้องกวางอนุสรณ์</strong>
+      <span>โหมดแอดมิน · ปีการศึกษา 2569</span>
+    </div>
+    <span class="pill pill-admin"> ผลประเมินจิตใจ</span>
+  </div>
+</div>
+
+<main>
+<div class="wrap">
+  <div class="page-head">
+    <h1>ผลแบบสอบถามเกี่ยวกับสภาพจิตใจของนักเรียน</h1>
+    <p>ข้อมูลรับมาจากแบบประเมิน (intex3) โดยอัตโนมัติ และเพิ่มรายการเองได้จากในเว็บ</p>
+  </div>
+
+  <div class="callout warn no-print" style="margin-bottom:18px">
+    🔒 ข้อมูลนี้เป็นข้อมูลส่วนบุคคลที่อ่อนไหว ใช้เพื่อการดูแลช่วยเหลือนักเรียนเท่านั้น
+    ห้ามเผยแพร่หรือนำไปใช้ในทางที่ทำให้นักเรียนเสียหาย
+  </div>
+
+  <div class="card no-print">
+    <h3 class="card-title"><span class="dot"></span>เพิ่มรายการผลประเมิน</h3>
+    <p class="card-sub">สำหรับกรณีที่นักเรียนทำแบบประเมินในกระดาษแล้วนำมาบันทึกภายหลัง</p>
+    <form id="addForm" class="form-grid cols-2">
+      <div class="field"><label for="f-sid">รหัสนักเรียน <span class="req">*</span></label>
+        <input type="text" id="f-sid" placeholder="เช่น 25690001" required></div>
+      <div class="field"><label for="f-name">ชื่อ - นามสกุล <span class="req">*</span></label>
+        <input type="text" id="f-name" placeholder="ชื่อ - นามสกุล" required></div>
+      <div class="field"><label for="f-room">ชั้น <span class="req">*</span></label>
+        <select id="f-room" required><option value="">— เลือกชั้น —</option></select></div>
+      <div class="field"><label for="f-no">เลขที่ <span class="req">*</span></label>
+        <input type="number" id="f-no" min="1" max="60" required></div>
+      <div class="field span-2"><label for="f-level">ผลการประเมิน <span class="req">*</span></label>
+        <select id="f-level" required><option value="">— เลือกระดับ —</option></select></div>
+      <div class="btn-row span-2" style="margin-top:4px">
+        <button type="submit" class="btn btn-primary">➕ เพิ่มแถว</button>
+        <span class="text-muted" style="font-size:.85rem">วันเดือนปีและเวลาจะถูกบันทึกอัตโนมัติ</span>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="table-tools no-print">
+      <div class="search-box"><input type="text" id="search" placeholder="ค้นหาชื่อ / รหัส / ชั้น"></div>
+      <select id="filterLevel" style="max-width:220px"><option value="">ทุกระดับ</option></select>
+      <span class="spacer"></span>
+      <button class="btn btn-ghost btn-sm" id="csvBtn">📄 ส่งออก CSV</button>
+      <button class="btn btn-ghost btn-sm" id="printBtn">🖨️ พิมพ์ / บันทึก PDF</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>ผลแบบสอบถามเกี่ยวกับสภาพจิตใจของนักเรียน</caption>
+        <thead>
+          <tr><th>รหัสนักเรียน</th><th>ชื่อ-นามสกุล</th><th>ชั้น</th><th class="num">เลขที่</th>
+              <th>วันเดือนปี</th><th>เวลา</th><th class="num">คะแนน</th><th>ผลการประเมิน</th><th class="no-print"></th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div id="emptyBox"></div>
+  </div>
+
+  <div class="chart-card" id="chart"></div>
+</div>
+</main>
+
+<footer id="siteFooter" class="site-footer"></footer>
+
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/app.js"></script>
+<script>
+SP.boot(function () {
+  if (!SP.Admin.guard()) return;
+
+  var roomSel = document.getElementById('f-room');
+  SP.ROOMS.forEach(function (r) { var o = document.createElement('option'); o.value = o.textContent = r; roomSel.appendChild(o); });
+  var lvSel = document.getElementById('f-level'), fLv = document.getElementById('filterLevel');
+  SP.LEVELS.forEach(function (l) {
+    var a = document.createElement('option'); a.value = l.n; a.textContent = l.short; lvSel.appendChild(a);
+    var b = document.createElement('option'); b.value = l.n; b.textContent = l.short; fLv.appendChild(b);
+  });
+
+  var tbody = document.getElementById('tbody'),
+      emptyBox = document.getElementById('emptyBox'),
+      search = document.getElementById('search');
+
+  function rows() { return SP.list(SP.KEY.MENTAL); }
+  function save(a) { SP.write(SP.KEY.MENTAL, a); }
+
+  function render() {
+    var all = rows().slice().sort(function (a, b) { return (b.iso || '').localeCompare(a.iso || ''); });
+    var q = (search.value || '').trim().toLowerCase();
+    var lvf = fLv.value;
+    var view = all.filter(function (r) {
+      if (lvf && String(r.level) !== lvf) return false;
+      if (!q) return true;
+      return ((r.name || '') + ' ' + (r.sid || '') + ' ' + (r.room || '')).toLowerCase().indexOf(q) > -1;
+    });
+
+    tbody.innerHTML = view.map(function (r) {
+      var lv = SP.levelOf(r.score != null ? r.score : 10);
+      if (r.level) { SP.LEVELS.forEach(function (L) { if (L.n === +r.level) lv = L; }); }
+      return '<tr>' +
+        '<td class="nowrap">' + SP.esc(r.sid) + '</td>' +
+        '<td><a href="intex6.7.html?sid=' + encodeURIComponent(r.sid) + '">' + SP.esc(r.name) + '</a></td>' +
+        '<td class="nowrap">' + SP.esc(r.room) + '</td>' +
+        '<td class="num">' + SP.esc(r.no) + '</td>' +
+        '<td class="nowrap">' + SP.esc(r.date) + '</td>' +
+        '<td class="nowrap">' + SP.esc(r.time) + '</td>' +
+        '<td class="num">' + (r.score != null ? r.score + '/50' : '—') + '</td>' +
+        '<td class="nowrap"><span class="level-badge ' + lv.cls + '" style="font-size:.78rem;padding:3px 10px">' + SP.esc(lv.short) + '</span></td>' +
+        '<td class="no-print"><button class="row-del" data-del="' + r.id + '" title="ลบแถวนี้">✕</button></td></tr>';
+    }).join('');
+
+    emptyBox.innerHTML = view.length ? '' :
+      '<div class="empty-state"><span class="big">❤️</span>' +
+      (all.length ? 'ไม่พบรายการที่ค้นหา' : 'ยังไม่มีนักเรียนทำแบบประเมิน') + '</div>';
+
+    /* กราฟ: ระดับสภาพจิตใจ กับ จำนวนคน (เรียงตามระดับ 1→5) */
+    var counts = {};
+    SP.LEVELS.forEach(function (L) { counts[L.short] = 0; });
+    view.forEach(function (r) {
+      var n = +r.level || SP.levelOf(r.score || 10).n;
+      SP.LEVELS.forEach(function (L) { if (L.n === n) counts[L.short]++; });
+    });
+    var cats = SP.LEVELS.map(function (L) { return L.short; });
+    SP.barChart(document.getElementById('chart'), {
+      title: 'กราฟแสดงความสัมพันธ์ระหว่างระดับสภาพจิตใจของนักเรียนกับจำนวนคน',
+      subtitle: 'หน่วย: จำนวนคน · เรียงจากระดับ 1 (ดีมาก) ถึงระดับ 5 (ควรพบผู้เชี่ยวชาญ)',
+      categories: cats,
+      series: [{ name: 'จำนวนนักเรียน', values: cats.map(function (c) { return counts[c]; }) }],
+      fmt: function (v) { return SP.fmtNum(Math.round(v * 100) / 100); },
+      emptyText: 'ยังไม่มีผลการประเมินสำหรับสร้างกราฟ'
+    });
+  }
+
+  document.getElementById('addForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var sid = document.getElementById('f-sid').value.trim();
+    var name = document.getElementById('f-name').value.trim();
+    var room = roomSel.value, no = document.getElementById('f-no').value.trim(), lv = lvSel.value;
+    if (!sid || !name || !room || !no || !lv) { SP.toast('กรุณากรอกข้อมูลให้ครบ'); return; }
+    var L = SP.LEVELS[+lv - 1];
+    var st = SP.stamp();
+    SP.push(SP.KEY.MENTAL, {
+      id: 'm' + Date.now() + Math.floor(Math.random() * 999),
+      iso: st.iso, date: st.date, time: st.time,
+      sid: sid, name: name, room: room, no: no,
+      answers: [], score: null, level: L.n, levelName: L.name, manual: true
+    });
+    this.reset(); SP.toast('เพิ่มรายการเรียบร้อย'); render();
+  });
+
+  tbody.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-del]'); if (!b) return;
+    if (!confirm('ลบผลการประเมินรายการนี้?')) return;
+    save(rows().filter(function (r) { return r.id !== b.getAttribute('data-del'); }));
+    SP.toast('ลบรายการแล้ว'); render();
+  });
+
+  search.addEventListener('input', render);
+  fLv.addEventListener('change', render);
+  document.getElementById('printBtn').addEventListener('click', function () { window.print(); });
+  document.getElementById('csvBtn').addEventListener('click', function () {
+    SP.exportCSV('ผลประเมินสภาพจิตใจ-2569.csv',
+      ['รหัสนักเรียน', 'ชื่อ-นามสกุล', 'ชั้น', 'เลขที่', 'วันเดือนปี', 'เวลา', 'คะแนน', 'ผลการประเมิน'],
+      rows().map(function (r) {
+        var L = SP.LEVELS[(+r.level || 1) - 1];
+        return [r.sid, r.name, r.room, r.no, r.date, r.time, r.score == null ? '' : r.score, L ? L.short : ''];
+      }));
+  });
+
+  render();
+
+  SP.onSync(render);
+});
+</script>
+</body>
+</html>

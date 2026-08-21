@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>หน้าแอดมิน | สภานักเรียนโรงเรียนร้องกวางอนุสรณ์</title>
+<link rel="icon" href="assets/logo-council.jpg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="css/stely.css">
+</head>
+<body>
+<header id="topbar" class="topbar" data-nav="admin" data-active=""></header>
+
+<main>
+  <!-- พื้นหลังกวาง -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-badges">
+        <img src="assets/logo-school.jpg" alt="ตราโรงเรียนร้องกวางอนุสรณ์">
+        <img src="assets/logo-council.jpg" alt="ตราสภานักเรียน">
+      </div>
+      <h1>โหมดแอดมิน · สภานักเรียน</h1>
+      <p class="lead">ศูนย์รวมข้อมูลของสภานักเรียนโรงเรียนร้องกวางอนุสรณ์
+        งบประมาณ คลังปัญหา ผลประเมินสภาพจิตใจ ผลโหวตกิจกรรม และรายงานสรุป</p>
+      <div class="hero-cta">
+        <a class="btn btn-gold" href="intex6.5.html"> ดูรายงานสรุปทั้งหมด</a>
+        <a class="btn btn-light" href="intex6.1.html"> จัดการงบประมาณ</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="page-head">
+      <h2>เมนูผู้ดูแลระบบ</h2>
+      <p>ข้อมูลทั้งหมดมาจากแบบฟอร์มที่นักเรียนส่งเข้ามา และรายการที่แอดมินเพิ่มเอง</p>
+    </div>
+
+    <div class="grid grid-2" id="tiles"></div>
+
+    <div class="card mt-2">
+      <h3 class="card-title"><span class="dot"></span>ทะเบียนนักเรียนที่ลงทะเบียนแล้ว</h3>
+      <p class="card-sub">นักเรียนที่ยืนยันตัวตนด้วย OTP และเข้าใช้งานเว็บไซต์ได้</p>
+      <div class="table-tools">
+        <div class="search-box"><input type="text" id="stuSearch" placeholder="ค้นหาชื่อ / รหัส / ชั้น / อีเมล"></div>
+        <span class="spacer"></span>
+        <button class="btn btn-ghost btn-sm" id="stuCsv">ส่งออก CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>รหัสนักเรียน</th><th>ชื่อ-นามสกุล</th><th>ชั้น</th><th class="num">เลขที่</th>
+                     <th>อีเมล</th><th>ลงทะเบียนเมื่อ</th><th></th></tr></thead>
+          <tbody id="stuBody"></tbody>
+        </table>
+      </div>
+      <div id="stuEmpty"></div>
+    </div>
+
+    <div class="card mt-2">
+      <h3 class="card-title"><span class="dot"></span>เครื่องมือจัดการข้อมูล</h3>
+      <p class="card-sub">สำรองข้อมูลก่อนล้างเสมอ · ไฟล์สำรองเป็น .json นำกลับมาใช้ได้ ·
+      รูปภาพเก็บแยกใน IndexedDB จึงมีปุ่มสำรองพร้อมรูปให้เลือก</p>
+      <div id="storageBox" style="margin-bottom:16px"></div>
+      <div class="btn-row" style="margin-top:0">
+        <button class="btn btn-ghost btn-sm" id="backupBtn">สำรองข้อมูล (ไม่รวมรูป)</button>
+        <button class="btn btn-ghost btn-sm" id="backupImgBtn">สำรองข้อมูลพร้อมรูปภาพ</button>
+        <label class="btn btn-ghost btn-sm" for="restoreFile">กู้คืนจากไฟล์สำรอง</label>
+        <input type="file" id="restoreFile" accept="application/json,.json" hidden>
+        <button class="btn btn-ghost btn-sm" id="persistBtn">ขอเก็บข้อมูลถาวร</button>
+        <button class="btn btn-ghost btn-sm" id="cleanBtn">ล้างรูปกำพร้า</button>
+        <button class="btn btn-danger btn-sm" id="clearBtn" style="margin-left:auto">ล้างข้อมูลทั้งหมด</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer id="siteFooter" class="site-footer"></footer>
+
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/app.js"></script>
+<script>
+SP.boot(function () {
+  if (!SP.Admin.guard()) return;
+
+  var budget = SP.list(SP.KEY.BUDGET);
+  var spent = budget.reduce(function (a, b) { return a + (Number(b.actual) || 0); }, 0);
+  var waitN = SP.list(SP.KEY.PROBLEM).filter(function (r) { return (r.status || 'wait') === 'wait'; }).length;
+  var tiles = [
+    { href: 'intex6.1.html', ico: '💰', h: 'งบประมาณ', p: 'ตารางงบประมาณปีการศึกษา 2569 พร้อมกราฟเปรียบเทียบงบทั้งหมด จ่ายจริง และคงเหลือ', n: budget.length + ' รายการ · จ่ายจริงรวม ' + SP.fmtBaht(spent) },
+    { href: 'intex6.2.html', ico: '📣', h: 'คลังบันทึกปัญหาภายในโรงเรียน', p: 'ปัญหาที่นักเรียนแจ้งเข้ามา อัปเดตสถานะ 3 ขั้น และปรับระดับความร้ายแรงได้', n: SP.list(SP.KEY.PROBLEM).length + ' รายการ · รอดำเนินการ ' + waitN + ' เรื่อง' },
+    { href: 'intex6.3.html', ico: '❤️', h: 'คลังผลแบบประเมินสภาพจิตใจ', p: 'ผลการประเมินรายบุคคล พร้อมกราฟจำนวนนักเรียนในแต่ละระดับ', n: SP.list(SP.KEY.MENTAL).length + ' คน' },
+    { href: 'intex6.4.html', ico: '🗳️', h: 'ผลโหวตกิจกรรมยอดนิยม', p: 'สรุปคะแนนโหวตกิจกรรม พร้อมกราฟจำนวนผู้เลือกในแต่ละกิจกรรม', n: SP.list(SP.KEY.VOTE).length + ' การโหวต' },
+    { href: 'intex6.6.html', ico: '👥', h: 'คลังรายชื่อนักเรียนทั้งโรงเรียน', p: 'รายชื่อหลักที่ใช้ตรวจสอบตอนลงทะเบียน นำเข้าจาก CSV ได้', n: SP.Roster.all().length + ' คน · ลงทะเบียนแล้ว ' + SP.Student.all().length + ' คน' },
+    { href: 'intex6.5.html', ico: '📑', h: 'สรุปผลทั้งหมด', p: 'รายงานภาพรวมทุกด้านในหน้าเดียว ดาวน์โหลดเป็น PDF ขนาด A4 แนวตั้งได้', n: 'พร้อมดาวน์โหลด PDF' }
+  ];
+  document.getElementById('tiles').innerHTML = tiles.map(function (t) {
+    return '<a class="tile" href="' + t.href + '"><div class="ico">' + t.ico + '</div>' +
+      '<h3>' + SP.esc(t.h) + '</h3><p>' + SP.esc(t.p) + '</p>' +
+      '<span class="go">' + SP.esc(t.n) + ' →</span></a>';
+  }).join('');
+
+  /* ---- ทะเบียนนักเรียน ---- */
+  var stuBody = document.getElementById('stuBody'),
+      stuEmpty = document.getElementById('stuEmpty'),
+      stuSearch = document.getElementById('stuSearch');
+
+  function renderStudents() {
+    var all = SP.Student.all().slice().sort(function (a, b) {
+      return String(a.room).localeCompare(String(b.room), 'th') || (+a.no) - (+b.no);
+    });
+    var q = (stuSearch.value || '').trim().toLowerCase();
+    var view = all.filter(function (r) {
+      if (!q) return true;
+      return ((r.sid || '') + ' ' + (r.name || '') + ' ' + (r.room || '') + ' ' + (r.email || '')).toLowerCase().indexOf(q) > -1;
+    });
+    stuBody.innerHTML = view.map(function (r) {
+      return '<tr><td class="nowrap">' + SP.esc(r.sid) + '</td>' +
+        '<td><a href="intex6.7.html?sid=' + encodeURIComponent(r.sid) + '" style="font-weight:600">' + SP.esc(r.name) + '</a></td>' +
+        '<td class="nowrap">' + SP.esc(r.room) + '</td><td class="num">' + SP.esc(r.no) + '</td>' +
+        '<td>' + SP.esc(r.email) + '</td>' +
+        '<td class="nowrap">' + SP.esc(r.createdDate || '—') + '</td>' +
+        '<td><button class="row-del" data-sid="' + SP.esc(r.sid) + '" title="ลบนักเรียนคนนี้ออกจากทะเบียน">✕</button></td></tr>';
+    }).join('');
+    stuEmpty.innerHTML = view.length ? '' :
+      '<div class="empty-state"><span class="big">👥</span>' +
+      (all.length ? 'ไม่พบนักเรียนที่ค้นหา' : 'ยังไม่มีนักเรียนลงทะเบียน') + '</div>';
+  }
+  stuSearch.addEventListener('input', renderStudents);
+  stuBody.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-sid]'); if (!b) return;
+    if (!confirm('ลบนักเรียนรหัส ' + b.getAttribute('data-sid') + ' ออกจากทะเบียน?\nนักเรียนจะต้องลงทะเบียนใหม่จึงจะเข้าใช้งานได้\n(ข้อมูลโหวต/แบบประเมินที่เคยส่งไว้จะยังอยู่)')) return;
+    SP.Student.remove(b.getAttribute('data-sid'));
+    SP.toast('ลบออกจากทะเบียนแล้ว'); renderStudents();
+  });
+  document.getElementById('stuCsv').addEventListener('click', function () {
+    SP.exportCSV('ทะเบียนนักเรียน-2569.csv',
+      ['รหัสนักเรียน', 'ชื่อ-นามสกุล', 'ชั้น', 'เลขที่', 'อีเมล', 'ลงทะเบียนเมื่อ'],
+      SP.Student.all().map(function (r) { return [r.sid, r.name, r.room, r.no, r.email, (r.createdDate || '') + ' ' + (r.createdTime || '')]; }));
+  });
+  renderStudents();
+
+  /* ---- พื้นที่จัดเก็บ ---- */
+  function paintStorage() {
+    var box = document.getElementById('storageBox');
+    box.innerHTML = '<p class="hint">กำลังตรวจสอบพื้นที่จัดเก็บ...</p>';
+    SP.storageInfo().then(function (info) {
+      var quota = info.quota || (5 * 1024 * 1024);
+      var pct = Math.min(100, info.usage / quota * 100);
+      var isOnline = SP.DB && SP.DB.on();
+      box.innerHTML =
+        (isOnline
+          ? '<div class="callout" style="margin-bottom:12px;font-size:.86rem">' +
+            '☁️ <strong>โหมดออนไลน์</strong> — ข้อมูลและรูปภาพเก็บบน Supabase ' +
+            'ทุกเครื่องเห็นข้อมูลเดียวกันและอัปเดตให้อัตโนมัติ<br>' +
+            'ตัวเลขด้านล่างคือพื้นที่ที่ใช้ในเครื่องนี้เท่านั้น ' +
+            'ดูพื้นที่จริงได้ที่ Supabase Dashboard</div>'
+          : '') +
+        '<div style="display:flex;gap:10px;font-size:.88rem;flex-wrap:wrap;align-items:baseline">' +
+          '<span>ใช้ไป <strong>' + SP.fmtBytes(info.usage) + '</strong> จากพื้นที่ที่เบราว์เซอร์ให้ <strong>' +
+            SP.fmtBytes(quota) + '</strong></span>' +
+          '<span style="margin-left:auto" class="text-muted">' + pct.toFixed(pct < 1 ? 2 : 1) + '%</span>' +
+        '</div>' +
+        '<div class="storage-bar' + (pct > 80 ? ' warn' : '') + '"><span style="width:' + Math.max(0.6, pct).toFixed(2) + '%"></span></div>' +
+        '<div class="grid grid-3" style="margin-top:12px;gap:10px">' +
+          '<div class="stat" style="box-shadow:none;background:var(--surface-2);padding:12px">' +
+            '<h3 style="font-size:.82rem;margin-bottom:4px">คลังรูปภาพ (IndexedDB)</h3>' +
+            '<div class="headline" style="margin:0;font-size:1.15rem">' + SP.fmtBytes(info.images) +
+            ' <span style="font-size:.8rem;font-weight:600;color:var(--ink-muted)">' + info.imageCount + ' รูป</span></div></div>' +
+          '<div class="stat" style="box-shadow:none;background:var(--surface-2);padding:12px">' +
+            '<h3 style="font-size:.82rem;margin-bottom:4px">ข้อมูลตาราง (localStorage)</h3>' +
+            '<div class="headline" style="margin:0;font-size:1.15rem">' + SP.fmtBytes(info.ls) + '</div></div>' +
+          '<div class="stat" style="box-shadow:none;background:var(--surface-2);padding:12px">' +
+            '<h3 style="font-size:.82rem;margin-bottom:4px">การเก็บถาวร</h3>' +
+            '<div class="headline" style="margin:0;font-size:1.15rem">' +
+              (info.persisted ? '<span style="color:var(--good)">เปิดอยู่</span>'
+                              : '<span style="color:var(--ink-muted)">ยังไม่เปิด</span>') + '</div></div>' +
+        '</div>' +
+        (pct > 80 ? '<p class="hint" style="color:#8c1f1f;margin-top:10px">พื้นที่ใกล้เต็ม — สำรองข้อมูลแล้วลบเรื่องเก่าที่ปิดงานแล้วออก</p>'
+                  : '<p class="hint" style="margin-top:10px">รูปภาพเก็บใน IndexedDB ซึ่งมีพื้นที่มากกว่า localStorage หลายสิบเท่า</p>');
+    })['catch'](function () {
+      box.innerHTML = '<p class="hint">ตรวจสอบพื้นที่จัดเก็บไม่สำเร็จ</p>';
+    });
+  }
+  paintStorage();
+
+  /* ขอสิทธิ์เก็บข้อมูลถาวร */
+  document.getElementById('persistBtn').addEventListener('click', function () {
+    SP.requestPersist().then(function (ok) {
+      SP.toast(ok ? 'เบราว์เซอร์จะเก็บข้อมูลนี้แบบถาวรแล้ว'
+                  : 'เบราว์เซอร์ยังไม่อนุญาต — ลองเพิ่มเว็บนี้เป็นบุ๊กมาร์กหรือติดตั้งเป็นแอปก่อน');
+      paintStorage();
+    });
+  });
+
+  /* ล้างรูปกำพร้า (รูปที่ไม่มีเรื่องไหนอ้างถึงแล้ว) */
+  document.getElementById('cleanBtn').addEventListener('click', function () {
+    var used = SP.usedPhotoRefs();
+    SP.Img.all().then(function (list) {
+      var orphans = list.filter(function (x) { return !used[x.id]; });
+      if (!orphans.length) { SP.toast('ไม่มีรูปกำพร้าให้ลบ'); return; }
+      var bytes = orphans.reduce(function (a, x) { return a + (x.size || 0); }, 0);
+      if (!confirm('พบรูปที่ไม่มีเรื่องไหนใช้งานแล้ว ' + orphans.length + ' รูป (' + SP.fmtBytes(bytes) + ')\nลบออกเพื่อคืนพื้นที่?')) return;
+      Promise.all(orphans.map(function (x) { return SP.Img.del(x.id); })).then(function () {
+        SP.toast('ลบรูปกำพร้า ' + orphans.length + ' รูปแล้ว');
+        paintStorage();
+      });
+    });
+  });
+
+  function baseData() {
+    return {
+      exportedAt: new Date().toISOString(),
+      votes: SP.list(SP.KEY.VOTE), mental: SP.list(SP.KEY.MENTAL),
+      problems: SP.list(SP.KEY.PROBLEM), budget: SP.list(SP.KEY.BUDGET),
+      voteExtra: SP.list(SP.KEY.VOTE_EXTRA),
+      students: SP.list(SP.KEY.STUDENT),
+      roster: SP.list(SP.KEY.ROSTER),
+      ratings: SP.list(SP.KEY.RATING),
+      settings: SP.read(SP.KEY.SETTINGS, null)
+    };
+  }
+  function download(data, suffix) {
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'sapara-backup' + (suffix || '') + '-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 800);
+  }
+
+  document.getElementById('backupBtn').addEventListener('click', function () {
+    download(baseData(), '');
+    SP.toast('สำรองข้อมูลเรียบร้อย (ไม่รวมรูป)');
+  });
+
+  document.getElementById('backupImgBtn').addEventListener('click', function () {
+    var btn = this;
+    var refs = Object.keys(SP.usedPhotoRefs()).filter(function (r) { return r.indexOf('data:') !== 0; });
+    if (!refs.length) { download(baseData(), ''); SP.toast('ไม่มีรูปให้สำรอง'); return; }
+    if (!confirm('สำรองพร้อมรูปภาพ ' + refs.length + ' รูป\nไฟล์อาจมีขนาดใหญ่และใช้เวลาสักครู่ — ดำเนินการต่อ?')) return;
+    btn.disabled = true; btn.textContent = 'กำลังรวบรวมรูป...';
+    Promise.all(refs.map(function (ref) {
+      return SP.Img.toDataUrl(ref).then(function (d) { return [ref, d]; });
+    })).then(function (pairs) {
+      var data = baseData();
+      data.images = {};
+      pairs.forEach(function (p) { if (p[1]) data.images[p[0]] = p[1]; });
+      download(data, '-พร้อมรูป');
+      SP.toast('สำรองข้อมูลพร้อมรูปเรียบร้อย');
+    })['catch'](function (e) { alert('สำรองรูปไม่สำเร็จ: ' + e.message); })
+    .then(function () { btn.disabled = false; btn.textContent = 'สำรองข้อมูลพร้อมรูปภาพ'; });
+  });
+
+  document.getElementById('restoreFile').addEventListener('change', function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    var fr = new FileReader();
+    fr.onload = function () {
+      try {
+        var d = JSON.parse(fr.result);
+        if (!confirm('กู้คืนข้อมูลจากไฟล์นี้? ข้อมูลปัจจุบันจะถูกแทนที่ทั้งหมด')) return;
+        SP.write(SP.KEY.VOTE, d.votes || []);
+        SP.write(SP.KEY.MENTAL, d.mental || []);
+        SP.write(SP.KEY.PROBLEM, d.problems || []);
+        SP.write(SP.KEY.BUDGET, d.budget || []);
+        SP.write(SP.KEY.VOTE_EXTRA, d.voteExtra || []);
+        if (d.students) SP.write(SP.KEY.STUDENT, d.students);
+        if (d.roster) SP.write(SP.KEY.ROSTER, d.roster);
+        if (d.ratings) SP.write(SP.KEY.RATING, d.ratings);
+        if (d.settings) SP.write(SP.KEY.SETTINGS, d.settings);
+        if (d.images && Object.keys(d.images).length) {
+          SP.toast('กำลังกู้คืนรูปภาพ...');
+          var keys = Object.keys(d.images);
+          var map = {};
+          Promise.all(keys.map(function (oldRef) {
+            return SP.Img.putDataUrl(d.images[oldRef]).then(function (newRef) { map[oldRef] = newRef; })
+              ['catch'](function () { map[oldRef] = d.images[oldRef]; });
+          })).then(function () {
+            /* เปลี่ยนรหัสรูปเก่าในข้อมูลให้ชี้ไปรูปที่เพิ่งกู้คืน */
+            var pr = SP.list(SP.KEY.PROBLEM);
+            pr.forEach(function (r) {
+              r.photos = (r.photos || []).map(function (x) { return map[x] || x; });
+            });
+            SP.write(SP.KEY.PROBLEM, pr);
+            var stu = SP.list(SP.KEY.STUDENT);
+            stu.forEach(function (x) { if (x.photo && map[x.photo]) x.photo = map[x.photo]; });
+            SP.write(SP.KEY.STUDENT, stu);
+            SP.toast('กู้คืนข้อมูลและรูปเรียบร้อย');
+            setTimeout(function () { location.reload(); }, 900);
+          });
+          return;
+        }
+        SP.toast('กู้คืนข้อมูลเรียบร้อย'); setTimeout(function () { location.reload(); }, 800);
+      } catch (err) { alert('ไฟล์ไม่ถูกต้อง: ' + err.message); }
+    };
+    fr.readAsText(f);
+    e.target.value = '';
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', function () {
+    if (!confirm('ล้างข้อมูลทั้งหมด (โหวต ปัญหา ผลประเมิน งบประมาณ คะแนนเว็บไซต์)?\nทะเบียนนักเรียนและคลังรายชื่อจะยังคงอยู่\nการกระทำนี้ย้อนกลับไม่ได้')) return;
+    if (!confirm('ยืนยันอีกครั้ง: ต้องการลบข้อมูลทั้งหมดจริงหรือไม่?')) return;
+    SP.write(SP.KEY.VOTE, []); SP.write(SP.KEY.MENTAL, []);
+    SP.write(SP.KEY.PROBLEM, []); SP.write(SP.KEY.BUDGET, []); SP.write(SP.KEY.VOTE_EXTRA, []);
+    SP.write(SP.KEY.RATING, []);
+    SP.toast('ล้างข้อมูลเรียบร้อย'); setTimeout(function () { location.reload(); }, 800);
+  });
+});
+</script>
+</body>
+</html>

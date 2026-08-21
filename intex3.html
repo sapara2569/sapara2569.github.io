@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>แบบประเมินสภาพจิตใจ | สภานักเรียนโรงเรียนร้องกวางอนุสรณ์</title>
+<link rel="icon" href="assets/logo-council.jpg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="css/stely.css">
+</head>
+<body>
+<header id="topbar" class="topbar" data-nav="student" data-active="intex3"></header>
+
+<div class="masthead">
+  <div class="masthead-inner">
+   <img class="masthead-logo" src="assets/logo-school.jpg" alt="">
+    <img class="masthead-logo" src="assets/logo-council.jpg" alt="">
+    <div class="masthead-text">
+      <strong>สภานักเรียนโรงเรียนร้องกวางอนุสรณ์</strong>
+      <span>ปีการศึกษา 2569</span>
+    </div>
+    <span class="pill">💚 แบบประเมินสภาพจิตใจ</span>
+  </div>
+</div>
+
+<main>
+<div class="wrap wrap-narrow">
+  <div class="no-storage-note">⚠️ เบราว์เซอร์นี้ปิดการเก็บข้อมูล (localStorage) ข้อมูลที่บันทึกจะหายเมื่อปิดหน้าเว็บ</div>
+
+  <div class="page-head">
+    <h1>แบบประเมินสภาพจิตใจของนักเรียน</h1>
+    <p>ตอบตามความรู้สึกจริงของคุณในช่วง 2 สัปดาห์ที่ผ่านมา ทั้งหมด 10 ข้อ ใช้เวลาประมาณ 3 นาที
+      ระบบจะประมวลผลและให้คำแนะนำทันทีหลังส่ง</p>
+  </div>
+
+  <div class="callout" style="margin-bottom:18px">
+    🔒 ข้อมูลนี้ใช้เพื่อดูแลนักเรียนเท่านั้น จะไม่ถูกเปิดเผยต่อสาธารณะ และ
+    <strong>แบบประเมินนี้เป็นเครื่องมือคัดกรองเบื้องต้น ไม่ใช่การวินิจฉัยทางการแพทย์</strong>
+  </div>
+
+  <form id="mentalForm" novalidate>
+    <div class="card">
+      <h3 class="card-title"><span class="dot"></span>ข้อมูลผู้ตอบ</h3>
+      <p class="card-sub">ดึงจากบัญชีที่เข้าสู่ระบบอัตโนมัติ · แก้ไขได้ที่หน้า
+        <a href="intex8.html">โปรไฟล์ของฉัน</a></p>
+      <div class="form-grid cols-2">
+        <div class="field locked-field">
+          <label for="name">ชื่อ - นามสกุล 🔒</label>
+          <input type="text" id="name" disabled>
+        </div>
+        <div class="field locked-field">
+          <label for="sid">รหัสนักเรียน 🔒</label>
+          <input type="text" id="sid" disabled>
+        </div>
+        <div class="field locked-field">
+          <label for="room">ชั้น 🔒</label>
+          <input type="text" id="room" disabled>
+        </div>
+        <div class="field locked-field">
+          <label for="no">เลขที่ 🔒</label>
+          <input type="text" id="no" disabled>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="card-title"><span class="dot"></span>แบบสอบถาม 10 ข้อ</h3>
+      <p class="card-sub">เลือกระดับความถี่ที่ตรงกับตัวคุณมากที่สุด · <span id="progress">ตอบแล้ว 0/10 ข้อ</span></p>
+      <div id="questions"></div>
+    </div>
+
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">📨 ส่งแบบประเมิน</button>
+      <a class="btn btn-ghost" href="intex1.html">ยกเลิก</a>
+    </div>
+  </form>
+</div>
+</main>
+
+<footer id="siteFooter" class="site-footer"></footer>
+
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/app.js"></script>
+<script>
+SP.boot(function () {
+  if (!SP.Student.guard()) return;
+  var me = SP.Student.current();
+
+  document.getElementById('name').value = me.name;
+  document.getElementById('sid').value = me.sid;
+  document.getElementById('room').value = me.room;
+  document.getElementById('no').value = me.no;
+
+  var qHost = document.getElementById('questions');
+  qHost.innerHTML = SP.QUESTIONS.map(function (q, i) {
+    var n = i + 1;
+    return '<div class="q-item" data-q="' + n + '">' +
+      '<div class="q-text"><span class="q-no">' + n + '</span><span>' + SP.esc(q) + '</span></div>' +
+      '<div class="likert" role="radiogroup" aria-label="ข้อ ' + n + '">' +
+      SP.LEVEL_SCALE.map(function (s) {
+        return '<input type="radio" name="q' + n + '" id="q' + n + '_' + s.v + '" value="' + s.v + '">' +
+          '<label for="q' + n + '_' + s.v + '"><span class="num">' + s.v + '</span>' + SP.esc(s.t) + '</label>';
+      }).join('') +
+      '</div><span class="err-msg q-err">กรุณาเลือกคำตอบข้อนี้</span></div>';
+  }).join('');
+
+  var prog = document.getElementById('progress');
+  qHost.addEventListener('change', function (ev) {
+    var done = 0;
+    for (var i = 1; i <= 10; i++) if (document.querySelector('input[name=q' + i + ']:checked')) done++;
+    prog.textContent = 'ตอบแล้ว ' + done + '/10 ข้อ';
+    var it = ev.target.closest('.q-item');
+    if (it) { it.classList.remove('invalid'); var em = it.querySelector('.q-err'); if (em) em.style.display = 'none'; }
+  });
+
+  function bad(id, on) {
+    var f = document.getElementById(id).closest('.field');
+    if (f) f.classList.toggle('invalid', on);
+    return !on;
+  }
+
+  document.getElementById('mentalForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var ok = true;
+    var answers = [], firstMissing = null;
+    for (var i = 1; i <= 10; i++) {
+      var sel = document.querySelector('input[name=q' + i + ']:checked');
+      var item = qHost.querySelector('.q-item[data-q="' + i + '"]');
+      if (!sel) {
+        ok = false; item.classList.add('invalid');
+        item.querySelector('.q-err').style.display = 'block';
+        if (!firstMissing) firstMissing = item;
+      } else {
+        item.classList.remove('invalid');
+        item.querySelector('.q-err').style.display = 'none';
+        answers.push(+sel.value);
+      }
+    }
+    if (!ok) {
+      SP.toast('กรุณาตอบให้ครบทุกข้อ');
+      var t = firstMissing;
+      if (t) t.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    var total = answers.reduce(function (a, b) { return a + b; }, 0);
+    var lv = SP.levelOf(total);
+    var st = SP.stamp();
+    var id = 'm' + Date.now() + Math.floor(Math.random() * 999);
+
+    /* ส่งข้อมูลพร้อมวันเดือนปีและเวลาไปยังคลังข้อมูล (intex6.3) */
+    SP.push(SP.KEY.MENTAL, {
+      id: id, iso: st.iso, date: st.date, time: st.time,
+      sid: me.sid, name: me.name, room: me.room, no: me.no,
+      answers: answers, score: total, level: lv.n, levelName: lv.name
+    });
+    SP.go('intex3.1.html?id=' + encodeURIComponent(id));
+  });
+});
+</script>
+</body>
+</html>

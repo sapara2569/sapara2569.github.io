@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ส่งสำเร็จ | สภานักเรียนโรงเรียนร้องกวางอนุสรณ์</title>
+<link rel="icon" href="assets/logo-council.jpg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="css/stely.css">
+</head>
+<body>
+<header id="topbar" class="topbar" data-nav="student" data-active=""></header>
+
+<main>
+<div class="status-page">
+  <div class="status-card">
+    <div class="check-icon" aria-hidden="true">
+      <svg viewBox="0 0 52 52"><path d="M13 27 l9 9 17 -19"/></svg>
+    </div>
+    <h1>ส่งสำเร็จ</h1>
+    <p id="msg">ระบบได้บันทึกข้อมูลของคุณเรียบร้อยแล้ว ขอบคุณที่ร่วมเป็นส่วนหนึ่งในการพัฒนาโรงเรียน</p>
+    <p class="status-meta" id="meta"></p>
+    <div class="btn-row" style="justify-content:center">
+      <a class="btn btn-primary" href="intex1.html"> กลับหน้าหลัก</a>
+      <a class="btn btn-ghost" href="#" id="again">ส่งอีกครั้ง</a>
+    </div>
+  </div>
+</div>
+</main>
+
+<footer id="siteFooter" class="site-footer"></footer>
+
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/app.js"></script>
+<script>
+SP.boot(function () {
+  if (!SP.Student.guard()) return;
+  var from = new URLSearchParams(location.search).get('from') || '';
+  var map = {
+    vote: { msg: 'บันทึกผลโหวตกิจกรรมของคุณเรียบร้อยแล้ว ', back: 'intex2.html' },
+    problem: { msg: 'บันทึกการแจ้งปัญหาเรียบร้อยแล้ว ติดตามความคืบหน้าได้ที่หน้า “สถานะการแจ้ง”', back: 'intex4.html', extra: 'intex9.html' }
+  };
+  var cfg = map[from];
+  if (cfg) {
+    document.getElementById('msg').textContent = cfg.msg;
+    document.getElementById('again').href = cfg.back;
+    if (cfg.extra) {
+      document.getElementById('again').insertAdjacentHTML('afterend',
+        '<a class="btn btn-ghost" href="' + cfg.extra + '">ดูสถานะการแจ้ง</a>');
+    }
+  } else {
+    document.getElementById('again').style.display = 'none';
+  }
+  var st = SP.stamp();
+  document.getElementById('meta').textContent = 'บันทึกเมื่อ ' + st.date + ' เวลา ' + st.time;
+});
+</script>
+</body>
+</html>

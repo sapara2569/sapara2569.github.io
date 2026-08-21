@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>คลังบันทึกปัญหาภายในโรงเรียน | โหมดแอดมิน</title>
+<link rel="icon" href="assets/logo-council.jpg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="css/stely.css">
+</head>
+<body>
+<header id="topbar" class="topbar" data-nav="admin" data-active="intex6.2"></header>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <img class="masthead-logo" src="assets/logo-school.jpg" alt="">
+    <img class="masthead-logo" src="assets/logo-council.jpg" alt="">
+    <div class="masthead-text">
+      <strong>สภานักเรียนโรงเรียนร้องกวางอนุสรณ์</strong>
+      <span>โหมดแอดมิน · ปีการศึกษา 2569</span>
+    </div>
+    <span class="pill pill-admin">📣 คลังปัญหา</span>
+  </div>
+</div>
+
+<main>
+<div class="wrap">
+  <div class="page-head">
+    <h1>ปัญหาภายในโรงเรียน</h1>
+    <p>ข้อมูลรับมาจากหน้ารายงานปัญหา (intex4) โดยอัตโนมัติ ·
+      เปลี่ยนสถานะและระดับความร้ายแรงได้ทันทีในตาราง · กด “รายละเอียด” เพื่อดูรูปและประวัติการดำเนินงาน</p>
+  </div>
+
+  <div class="grid grid-3" id="counts" style="margin-bottom:18px"></div>
+
+  <div class="card no-print">
+    <h3 class="card-title"><span class="dot"></span>เพิ่มรายการปัญหา</h3>
+    <p class="card-sub">สำหรับบันทึกปัญหาที่ได้รับแจ้งด้วยวาจาหรือช่องทางอื่น</p>
+    <form id="addForm" class="form-grid cols-2">
+      <div class="field">
+        <label for="f-problem">ปัญหา <span class="req">*</span></label>
+        <select id="f-problem" required><option value="">— เลือกปัญหา —</option></select>
+      </div>
+      <div class="field">
+        <label for="f-place">สถานที่ <span class="req">*</span></label>
+        <select id="f-place" required><option value="">— เลือกสถานที่ —</option></select>
+      </div>
+      <div class="field">
+        <label for="f-sev">ระดับความร้ายแรง <span class="req">*</span></label>
+        <select id="f-sev" required></select>
+      </div>
+      <div class="field">
+        <label for="f-by">ผู้แจ้ง</label>
+        <input type="text" id="f-by" placeholder="เช่น ครูเวรประจำวัน (ไม่บังคับ)">
+      </div>
+      <div class="btn-row span-2" style="margin-top:4px">
+        <button type="submit" class="btn btn-primary">เพิ่มแถว</button>
+        <span class="text-muted" style="font-size:.85rem">วันเดือนปีและเวลาจะถูกบันทึกอัตโนมัติ</span>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="table-tools no-print">
+      <div class="search-box"><input type="text" id="search" placeholder="ค้นหาปัญหา / สถานที่ / ผู้แจ้ง"></div>
+      <select id="fStatus" style="max-width:200px"><option value="">ทุกสถานะ</option></select>
+      <select id="fSev" style="max-width:220px"><option value="">ทุกระดับความร้ายแรง</option></select>
+      <span class="spacer"></span>
+      <button class="btn btn-ghost btn-sm" id="csvBtn">ส่งออก CSV</button>
+      <button class="btn btn-ghost btn-sm" id="printBtn">พิมพ์ / บันทึก PDF</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data" id="tbl">
+        <caption>ปัญหาภายในโรงเรียน</caption>
+        <thead>
+          <tr><th>วันเดือนปี</th><th>เวลา</th><th>ปัญหา</th><th>สถานที่</th><th>ผู้แจ้ง</th>
+              <th>ความร้ายแรง</th><th>สถานะ</th><th class="num">รูป</th><th class="no-print"></th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div id="emptyBox"></div>
+  </div>
+
+  <div class="chart-card" id="chart"></div>
+  <div class="chart-card" id="chartStatus"></div>
+</div>
+</main>
+
+<footer id="siteFooter" class="site-footer"></footer>
+
+<div class="lightbox" id="lightbox"><button class="close" aria-label="ปิด">✕</button><img alt="รูปภาพประกอบ"></div>
+
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/app.js"></script>
+<script>
+SP.boot(function () {
+  if (!SP.Admin.guard()) return;
+
+  var ps = document.getElementById('f-problem'), pl = document.getElementById('f-place'),
+      fsev = document.getElementById('f-sev'),
+      fStatus = document.getElementById('fStatus'), fSev = document.getElementById('fSev');
+  SP.PROBLEMS.forEach(function (p) { var o = document.createElement('option'); o.value = o.textContent = p; ps.appendChild(o); });
+  SP.PLACES.forEach(function (p) { var o = document.createElement('option'); o.value = o.textContent = p; pl.appendChild(o); });
+  SP.SEVERITIES.forEach(function (s) {
+    var a = document.createElement('option'); a.value = s.n; a.textContent = 'ระดับ ' + s.n + ' · ' + s.name;
+    fsev.appendChild(a);
+    var b = a.cloneNode(true); fSev.appendChild(b);
+  });
+  fsev.value = '3';
+  SP.STATUSES.forEach(function (s) {
+    var o = document.createElement('option'); o.value = s.k; o.textContent = s.ico + ' ' + s.name; fStatus.appendChild(o);
+  });
+
+  var tbody = document.getElementById('tbody'),
+      emptyBox = document.getElementById('emptyBox'),
+      search = document.getElementById('search');
+  var openId = null;
+
+  function rows() { return SP.list(SP.KEY.PROBLEM); }
+  function save(a) { return SP.write(SP.KEY.PROBLEM, a); }
+  function byId(id) { var a = rows(); for (var i = 0; i < a.length; i++) if (a[i].id === id) return a[i]; return null; }
+  function commit(rec) {
+    var a = rows();
+    for (var i = 0; i < a.length; i++) if (a[i].id === rec.id) { a[i] = rec; break; }
+    if (!save(a)) { SP.toast('บันทึกไม่สำเร็จ — พื้นที่จัดเก็บอาจเต็ม'); return false; }
+    return true;
+  }
+
+  function sevDots(n) {
+    var out = '';
+    for (var i = 1; i <= 5; i++) out += '<i class="' + (i <= n ? 'on' : '') + '"></i>';
+    return '<span class="sev-dots">' + out + '</span>';
+  }
+
+  function detailRow(r) {
+    var st = SP.statusOf(r.status || 'wait');
+    var photos = (r.photos || []).map(function (ref, i) {
+      return '<div class="thumb thumb-sm"><img data-photo="' + SP.esc(ref) + '" alt="รูปที่ ' + (i + 1) + '"></div>';
+    }).join('') || '<span class="text-muted" style="font-size:.85rem">ไม่มีรูปแนบ</span>';
+    var hist = (r.history || []).slice().reverse().map(function (h) {
+      var s = SP.statusOf(h.status);
+      return '<li><div class="t-name">' + s.ico + ' ' + SP.esc(s.name) + '</div>' +
+        '<div class="t-when">' + SP.esc(h.date + ' ' + h.time) + (h.by ? ' · ' + SP.esc(h.by) : '') + '</div>' +
+        (h.note ? '<div class="t-when">“' + SP.esc(h.note) + '”</div>' : '') + '</li>';
+    }).join('');
+    return '<tr class="detail-row"><td colspan="9" style="background:var(--surface-2)">' +
+      '<div class="case-body" style="margin:4px 0">' +
+        '<div>' +
+          '<div class="card-sub" style="margin-bottom:6px">รายละเอียดจากผู้แจ้ง</div>' +
+          '<p style="margin:0 0 12px">' + (r.detail ? SP.esc(r.detail) : '<span class="text-muted">— ไม่มีรายละเอียดเพิ่มเติม —</span>') + '</p>' +
+          '<div class="card-sub" style="margin-bottom:6px">รูปภาพประกอบ</div>' +
+          '<div class="thumb-row">' + photos + '</div>' +
+          '<hr class="section-divider">' +
+          '<div class="form-grid cols-2">' +
+            '<div class="field"><label>บันทึกการดำเนินงาน</label>' +
+              '<input type="text" class="d-note" data-id="' + r.id + '" placeholder="เช่น แจ้งฝ่ายอาคารสถานที่แล้ว"></div>' +
+            '<div class="field"><label>ผู้บันทึก</label>' +
+              '<input type="text" class="d-by" data-id="' + r.id + '" placeholder="ชื่อผู้ดำเนินการ"></div>' +
+            '<div class="btn-row span-2" style="margin-top:0">' +
+              SP.STATUSES.map(function (s) {
+                return '<button type="button" class="btn btn-ghost btn-sm d-set" data-id="' + r.id + '" data-st="' + s.k + '"' +
+                  ((r.status || 'wait') === s.k ? ' aria-disabled="true" disabled' : '') + '>' +
+                  s.ico + ' ตั้งเป็น “' + SP.esc(s.name) + '”</button>';
+              }).join('') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div>' +
+          '<div class="card-sub" style="margin-bottom:6px">ประวัติการดำเนินงาน</div>' +
+          '<ul class="tl">' + (hist || '<li><div class="t-when">ยังไม่มีประวัติ</div></li>') + '</ul>' +
+        '</div>' +
+      '</div></td></tr>';
+  }
+
+  function render() {
+    var all = rows().slice().sort(function (a, b) { return (b.iso || '').localeCompare(a.iso || ''); });
+    var q = (search.value || '').trim().toLowerCase();
+    var view = all.filter(function (r) {
+      if (fStatus.value && (r.status || 'wait') !== fStatus.value) return false;
+      if (fSev.value && String(r.severity || 3) !== fSev.value) return false;
+      if (!q) return true;
+      return ((r.problem || '') + ' ' + (r.place || '') + ' ' + (r.detail || '') + ' ' + (r.name || '')).toLowerCase().indexOf(q) > -1;
+    });
+
+    document.getElementById('counts').innerHTML = SP.STATUSES.map(function (s) {
+      var n = all.filter(function (r) { return (r.status || 'wait') === s.k; }).length;
+      var pct = all.length ? (n / all.length * 100).toFixed(1) : '0.0';
+      return '<div class="stat"><h3>' + s.ico + ' ' + SP.esc(s.name) + '</h3>' +
+        '<div class="headline" style="margin:0">' + n +
+        ' <span style="font-size:.9rem;font-weight:600;color:var(--ink-muted)">เรื่อง · ' + pct + '%</span></div></div>';
+    }).join('');
+
+    tbody.innerHTML = view.map(function (r) {
+      var st = SP.statusOf(r.status || 'wait');
+      var sv = SP.severityOf(r.severity || 3);
+      var who = r.name
+              ? '<a href="intex6.7.html?sid=' + encodeURIComponent(r.sid || '') + '" style="font-weight:600">' +
+                SP.esc(r.name) + '</a><br><span class="text-muted" style="font-size:.76rem">' +
+                SP.esc((r.room || '') + (r.no ? ' เลขที่ ' + r.no : '')) + '</span>'
+              : '<span class="text-muted">' + SP.esc(r.by || 'ไม่ระบุ') + '</span>';
+      var main = '<tr data-row="' + r.id + '">' +
+        '<td class="nowrap">' + SP.esc(r.date) + '</td>' +
+        '<td class="nowrap">' + SP.esc(r.time) + '</td>' +
+        '<td>' + SP.esc(r.problem) + '</td>' +
+        '<td>' + SP.esc(r.place) + '</td>' +
+        '<td>' + who + '</td>' +
+        '<td class="nowrap"><select class="sev-sel" data-id="' + r.id + '" style="min-width:150px;font-size:.82rem;padding:5px 28px 5px 9px">' +
+          SP.SEVERITIES.map(function (s) {
+            return '<option value="' + s.n + '"' + (s.n === sv.n ? ' selected' : '') + '>' + s.n + ' · ' + SP.esc(s.name) + '</option>';
+          }).join('') + '</select>' +
+          '<div class="sev-badge ' + sv.cls + '" style="margin-top:5px;font-size:.72rem;padding:2px 9px">' + sevDots(sv.n) + '</div></td>' +
+        '<td class="nowrap"><select class="st-sel" data-id="' + r.id + '" style="min-width:160px;font-size:.82rem;padding:5px 28px 5px 9px">' +
+          SP.STATUSES.map(function (s) {
+            return '<option value="' + s.k + '"' + (s.k === st.k ? ' selected' : '') + '>' + s.ico + ' ' + SP.esc(s.name) + '</option>';
+          }).join('') + '</select></td>' +
+        '<td class="num">' + ((r.photos || []).length || '—') + '</td>' +
+        '<td class="no-print nowrap">' +
+          '<button class="btn btn-ghost btn-sm d-open" data-id="' + r.id + '">' + (openId === r.id ? 'ปิด' : 'รายละเอียด') + '</button> ' +
+          '<button class="row-del" data-del="' + r.id + '" title="ลบแถวนี้">✕</button></td>' +
+        '</tr>';
+      return main + (openId === r.id ? detailRow(r) : '');
+    }).join('');
+
+    SP.Img.paintAll(tbody);
+
+    emptyBox.innerHTML = view.length ? '' :
+      '<div class="empty-state"><span class="big">📣</span>' +
+      (all.length ? 'ไม่พบรายการที่ค้นหา' : 'ยังไม่มีการแจ้งปัญหาเข้ามา') + '</div>';
+
+    /* กราฟ 1: ความถี่ของแต่ละปัญหา */
+    var ent = SP.sortedEntries(SP.countBy(view, function (r) { return r.problem; }));
+    SP.barChart(document.getElementById('chart'), {
+      title: 'กราฟแสดงความสัมพันธ์ระหว่างปัญหากับจำนวนของปัญหานั้น ๆ',
+      subtitle: 'หน่วย: จำนวนครั้งที่ได้รับแจ้ง · เรียงจากมากไปน้อย',
+      categories: ent.map(function (e) { return e[0]; }),
+      series: [{ name: 'จำนวนครั้งที่แจ้ง', values: ent.map(function (e) { return e[1]; }) }],
+      fmt: function (v) { return SP.fmtNum(Math.round(v * 100) / 100); },
+      emptyText: 'ยังไม่มีข้อมูลปัญหาสำหรับสร้างกราฟ'
+    });
+
+    /* กราฟ 2: ความร้ายแรง แยกตามสถานะ */
+    var cats = SP.SEVERITIES.map(function (s) { return 'ระดับ ' + s.n + ' · ' + s.name; });
+    SP.barChart(document.getElementById('chartStatus'), {
+      title: 'กราฟแสดงความสัมพันธ์ระหว่างระดับความร้ายแรงกับสถานะการดำเนินงาน',
+      subtitle: 'หน่วย: จำนวนเรื่อง',
+      categories: cats,
+      series: SP.STATUSES.map(function (s, i) {
+        return {
+          name: s.name, color: SP.PALETTE[i % SP.PALETTE.length],
+          values: SP.SEVERITIES.map(function (sv) {
+            return view.filter(function (r) {
+              return (r.status || 'wait') === s.k && (+r.severity || 3) === sv.n;
+            }).length;
+          })
+        };
+      }),
+      fmt: function (v) { return SP.fmtNum(Math.round(v * 100) / 100); },
+      emptyText: 'ยังไม่มีข้อมูลสำหรับสร้างกราฟ'
+    });
+  }
+
+  /* ---- เปลี่ยนสถานะ / ความร้ายแรง ---- */
+  function setStatus(id, k, note, by) {
+    var r = byId(id); if (!r) return;
+    if ((r.status || 'wait') === k && !note) return;
+    var st = SP.stamp();
+    r.status = k;
+    r.history = (r.history || []).concat([{
+      status: k, iso: st.iso, date: st.date, time: st.time,
+      by: (by || '').trim() || 'แอดมิน', note: (note || '').trim()
+    }]);
+    if (commit(r)) { SP.toast('อัปเดตสถานะเป็น “' + SP.statusOf(k).name + '” แล้ว'); render(); }
+  }
+
+  tbody.addEventListener('change', function (e) {
+    var ss = e.target.closest('.st-sel');
+    if (ss) { setStatus(ss.getAttribute('data-id'), ss.value, '', ''); return; }
+    var sv = e.target.closest('.sev-sel');
+    if (sv) {
+      var r = byId(sv.getAttribute('data-id')); if (!r) return;
+      r.severity = +sv.value;
+      if (commit(r)) { SP.toast('ปรับระดับความร้ายแรงเป็น ' + SP.severityOf(r.severity).name); render(); }
+    }
+  });
+
+  tbody.addEventListener('click', function (e) {
+    var op = e.target.closest('.d-open');
+    if (op) { var id = op.getAttribute('data-id'); openId = (openId === id ? null : id); render(); return; }
+
+    var set = e.target.closest('.d-set');
+    if (set) {
+      var rid = set.getAttribute('data-id');
+      var noteEl = tbody.querySelector('.d-note[data-id="' + rid + '"]');
+      var byEl = tbody.querySelector('.d-by[data-id="' + rid + '"]');
+      setStatus(rid, set.getAttribute('data-st'), noteEl ? noteEl.value : '', byEl ? byEl.value : '');
+      return;
+    }
+
+    var del = e.target.closest('[data-del]');
+    if (del) {
+      if (!confirm('ลบรายการนี้ออกจากคลังข้อมูล?\nรูปที่แนบมาจะถูกลบออกจากคลังรูปด้วย')) return;
+      var did = del.getAttribute('data-del');
+      var gone = byId(did);
+      if (gone) (gone.photos || []).forEach(function (ref) {
+        if (String(ref).indexOf('data:') !== 0) SP.Img.del(ref);
+      });
+      save(rows().filter(function (r) { return r.id !== did; }));
+      SP.toast('ลบรายการแล้ว'); openId = null; render(); return;
+    }
+
+    var im = e.target.closest('.thumb img');
+    if (im) { lb.querySelector('img').src = im.src; lb.classList.add('show'); }
+  });
+
+  var lb = document.getElementById('lightbox');
+  lb.addEventListener('click', function () { lb.classList.remove('show'); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') lb.classList.remove('show'); });
+
+  /* ---- เพิ่มรายการเอง ---- */
+  document.getElementById('addForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!ps.value || !pl.value) { SP.toast('กรุณาเลือกให้ครบ'); return; }
+    var st = SP.stamp();
+    var all = rows();
+    all.push({
+      id: 'p' + Date.now() + Math.floor(Math.random() * 999),
+      iso: st.iso, date: st.date, time: st.time,
+      problem: ps.value, place: pl.value, severity: +fsev.value,
+      detail: '', photos: [], manual: true,
+      by: document.getElementById('f-by').value.trim(),
+      status: 'wait',
+      history: [{ status: 'wait', iso: st.iso, date: st.date, time: st.time, by: 'แอดมิน', note: 'บันทึกโดยแอดมิน' }]
+    });
+    save(all);
+    this.reset(); fsev.value = '3';
+    SP.toast('เพิ่มรายการเรียบร้อย'); render();
+  });
+
+  search.addEventListener('input', render);
+  fStatus.addEventListener('change', render);
+  fSev.addEventListener('change', render);
+  document.getElementById('printBtn').addEventListener('click', function () { window.print(); });
+  document.getElementById('csvBtn').addEventListener('click', function () {
+    SP.exportCSV('ปัญหาภายในโรงเรียน-2569.csv',
+      ['วันเดือนปี', 'เวลา', 'ปัญหา', 'สถานที่', 'ผู้แจ้ง', 'ชั้น', 'เลขที่', 'ระดับความร้ายแรง', 'สถานะ', 'จำนวนรูป', 'รายละเอียด'],
+      rows().map(function (r) {
+        return [r.date, r.time, r.problem, r.place, r.name || r.by || '', r.room || '', r.no || '',
+                SP.severityOf(r.severity || 3).name, SP.statusOf(r.status || 'wait').name,
+                (r.photos || []).length, r.detail || ''];
+      }));
+  });
+
+  render();
+
+  SP.onSync(render);
+});
+</script>
+</body>
+</html>

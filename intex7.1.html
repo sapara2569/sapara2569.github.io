@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ยืนยันตัวตน | สภานักเรียนโรงเรียนร้องกวางอนุสรณ์</title>
+<link rel="icon" href="assets/logo-council.jpg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="css/stely.css">
+</head>
+<body>
+<header id="topbar" class="topbar" data-nav="student" data-active="intex7"></header>
+
+<main>
+<div class="auth-shell">
+  <div class="auth-card" style="max-width:520px">
+    <div class="auth-head">
+      <img src="assets/logo-council.jpg" alt="ตราสภานักเรียน">
+      <h1 id="headTitle">ยืนยันตัวตน</h1>
+      <p id="sentTo">กำลังเตรียมข้อมูล...</p>
+    </div>
+
+    <div class="alert alert-ok" id="okBox"></div>
+    <div class="alert alert-err" id="errBox"></div>
+
+    <!-- ===== โหมดออนไลน์: รอยืนยันอีเมล ===== -->
+    <section id="panelMail" hidden>
+      <div class="mail-wait">
+        <div class="mail-ico">📬</div>
+        <p>เราส่งอีเมลยืนยันไปให้แล้ว<br>
+          กรุณาเปิดกล่องจดหมาย แล้วกดลิงก์ในอีเมลเพื่อยืนยันตัวตน</p>
+        <p class="text-muted" style="font-size:.84rem">
+          ถ้าไม่เจอ ลองดูในโฟลเดอร์ <strong>จดหมายขยะ (Spam)</strong> หรือ <strong>โปรโมชัน</strong></p>
+      </div>
+      <div class="btn-row" style="justify-content:center;margin-top:20px">
+        <button type="button" class="btn btn-primary" id="checkBtn">ฉันยืนยันแล้ว</button>
+        <button type="button" class="btn btn-ghost" id="resendBtn2">ส่งอีเมลอีกครั้ง</button>
+      </div>
+      <p class="text-muted" style="font-size:.83rem;text-align:center;margin-top:14px">
+        <a href="intex7.html">← กลับหน้าเข้าสู่ระบบ</a></p>
+    </section>
+
+    <!-- ===== โหมดเครื่องเดียว: กรอกรหัส OTP ===== -->
+    <section id="panelOtp" hidden>
+      <div class="otp-demo" id="demoBox" hidden>
+        <span class="lbl">รหัส OTP ของคุณ (โหมดสาธิต)</span>
+        <div class="code" id="demoCode">------</div>
+        <p class="why">ยังไม่ได้เชื่อมต่อฐานข้อมูลออนไลน์ ระบบจึงแสดงรหัสให้ที่หน้านี้แทน</p>
+      </div>
+
+      <form id="otpForm" novalidate>
+        <div class="field">
+          <label for="otp1" style="text-align:center;display:block">กรอกรหัส 6 หลัก</label>
+          <div class="otp-inputs" id="otpInputs">
+            <input type="text" id="otp1" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="หลักที่ 1">
+            <input type="text" id="otp2" inputmode="numeric" maxlength="1" aria-label="หลักที่ 2">
+            <input type="text" id="otp3" inputmode="numeric" maxlength="1" aria-label="หลักที่ 3">
+            <input type="text" id="otp4" inputmode="numeric" maxlength="1" aria-label="หลักที่ 4">
+            <input type="text" id="otp5" inputmode="numeric" maxlength="1" aria-label="หลักที่ 5">
+            <input type="text" id="otp6" inputmode="numeric" maxlength="1" aria-label="หลักที่ 6">
+          </div>
+        </div>
+        <div class="otp-meta">
+          <span id="countdown">รหัสหมดอายุใน 5:00 นาที</span>
+          <button type="button" class="link-btn" id="resendBtn">ขอรหัสใหม่</button>
+        </div>
+        <div class="btn-row" style="justify-content:center">
+          <button type="submit" class="btn btn-primary" id="verifyBtn">ยืนยันรหัส</button>
+          <a class="btn btn-ghost" href="intex7.html">ย้อนกลับ</a>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>
+</main>
+
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/app.js"></script>
+<script>
+SP.boot(function () {
+  var qs = new URLSearchParams(location.search);
+  var next = qs.get('next') || 'intex1.html';
+  var ONLINE = SP.DB && SP.DB.live();
+  var okBox = document.getElementById('okBox'), errBox = document.getElementById('errBox');
+
+  function ok(m) { okBox.textContent = '✅ ' + m; okBox.classList.add('show'); errBox.classList.remove('show'); }
+  function fail(m) { errBox.textContent = '❌ ' + m; errBox.classList.add('show'); okBox.classList.remove('show'); }
+  function maskEmail(e) {
+    var p = String(e).split('@');
+    if (p.length < 2) return e;
+    var u = p[0], head = u.slice(0, Math.min(3, Math.max(1, u.length - 1)));
+    return head + '•••@' + p[1];
+  }
+
+  /* ================= โหมดออนไลน์ ================= */
+  if (ONLINE) {
+    var email = qs.get('email') || (SP.DB.user() ? SP.DB.user().email : '');
+    document.getElementById('panelMail').hidden = false;
+    document.getElementById('headTitle').textContent = 'ยืนยันอีเมลของคุณ';
+    document.getElementById('sentTo').innerHTML = email
+      ? 'ส่งไปที่ <strong>' + SP.esc(maskEmail(email)) + '</strong>'
+      : 'กรุณายืนยันอีเมลที่ใช้สมัคร';
+
+    /* ถ้ายืนยันแล้วและมี session ให้สร้างข้อมูลนักเรียนที่ค้างไว้ */
+    function finish() {
+      var pending = null;
+      try { pending = JSON.parse(localStorage.getItem('sapara2569.pendingReg') || 'null'); } catch (e) { }
+      return SP.DB.refreshRole().then(function (st) {
+        if (st.sid) return true;
+        if (!pending) return false;
+        return SP.DB.createMyStudent(pending).then(function () {
+          try { localStorage.removeItem('sapara2569.pendingReg'); } catch (e) { }
+          return SP.DB.refreshRole();
+        }).then(function () { return true; });
+      });
+    }
+
+    if (SP.DB.user()) {
+      finish().then(function (done) {
+        if (done) {
+          ok('ยืนยันเรียบร้อยแล้ว กำลังเข้าสู่ระบบ...');
+          setTimeout(function () { location.replace(next); }, 700);
+        }
+      })['catch'](function (e) { fail(e.message || 'สร้างข้อมูลนักเรียนไม่สำเร็จ'); });
+    }
+
+    document.getElementById('checkBtn').addEventListener('click', function () {
+      var b = this; b.disabled = true; b.textContent = 'กำลังตรวจสอบ...';
+      SP.DB.client().auth.getSession().then(function (r) {
+        var s = r && r.data ? r.data.session : null;
+        if (!s) {
+          fail('ยังไม่พบการยืนยัน — กรุณากดลิงก์ในอีเมลก่อน แล้วกลับมากดปุ่มนี้อีกครั้ง');
+          b.disabled = false; b.textContent = 'ฉันยืนยันแล้ว';
+          return;
+        }
+        return finish().then(function () {
+          ok('ยืนยันเรียบร้อยแล้ว กำลังเข้าสู่ระบบ...');
+          setTimeout(function () { location.replace(next); }, 700);
+        });
+      })['catch'](function (e) {
+        fail(e.message || 'ตรวจสอบไม่สำเร็จ');
+        b.disabled = false; b.textContent = 'ฉันยืนยันแล้ว';
+      });
+    });
+
+    document.getElementById('resendBtn2').addEventListener('click', function () {
+      if (!email) { fail('ไม่ทราบอีเมล กรุณากลับไปหน้าเข้าสู่ระบบ'); return; }
+      var b = this; b.disabled = true; b.textContent = 'กำลังส่ง...';
+      SP.DB.resendConfirm(email).then(function () {
+        ok('ส่งอีเมลยืนยันอีกครั้งแล้ว');
+      })['catch'](function (e) {
+        fail(/rate/i.test(e.message || '') ? 'ส่งถี่เกินไป กรุณารอสักครู่แล้วลองใหม่' : (e.message || 'ส่งไม่สำเร็จ'));
+      }).then(function () { b.disabled = false; b.textContent = 'ส่งอีเมลอีกครั้ง'; });
+    });
+    return;
+  }
+
+  /* ================= โหมดเครื่องเดียว (OTP) ================= */
+  document.getElementById('panelOtp').hidden = false;
+  var rec = SP.Otp.get();
+  if (!rec) { location.replace('intex7.html'); return; }
+
+  var demoBox = document.getElementById('demoBox'), demoCode = document.getElementById('demoCode'),
+      inputs = Array.prototype.slice.call(document.querySelectorAll('.otp-inputs input')),
+      resendBtn = document.getElementById('resendBtn'), verifyBtn = document.getElementById('verifyBtn');
+
+  document.getElementById('sentTo').innerHTML =
+    (rec.purpose === 'register' ? 'ลงทะเบียนใหม่ · ' : '') +
+    'ส่งรหัสไปที่ <strong>' + SP.esc(maskEmail(rec.email)) + '</strong>';
+
+  function deliver(r) {
+    demoBox.hidden = true;
+    SP.sendOtpEmail(r).then(function (res) {
+      if (res.sent) ok('ส่งรหัส OTP ไปที่อีเมลของคุณแล้ว');
+      else {
+        demoCode.textContent = r.code; demoBox.hidden = false;
+        if (res.reason && res.reason !== 'demo' && res.reason !== 'no-lib') {
+          fail('ส่งอีเมลไม่สำเร็จ (' + res.reason + ') ระบบจึงแสดงรหัสให้ที่หน้านี้แทน');
+        }
+      }
+    });
+  }
+  deliver(rec);
+
+  inputs.forEach(function (inp, i) {
+    inp.addEventListener('input', function () {
+      this.value = this.value.replace(/\D/g, '').slice(0, 1);
+      this.classList.toggle('filled', !!this.value);
+      if (this.value && i < inputs.length - 1) inputs[i + 1].focus();
+      if (inputs.every(function (x) { return x.value; })) setTimeout(submit, 120);
+    });
+    inp.addEventListener('keydown', function (e) {
+      if (e.key === 'Backspace' && !this.value && i > 0) { inputs[i - 1].focus(); inputs[i - 1].value = ''; inputs[i - 1].classList.remove('filled'); }
+      if (e.key === 'ArrowLeft' && i > 0) inputs[i - 1].focus();
+      if (e.key === 'ArrowRight' && i < inputs.length - 1) inputs[i + 1].focus();
+    });
+    inp.addEventListener('paste', function (e) {
+      e.preventDefault();
+      var t = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+      for (var k = 0; k < t.length && (i + k) < inputs.length; k++) {
+        inputs[i + k].value = t[k]; inputs[i + k].classList.add('filled');
+      }
+      inputs[Math.min(i + t.length, inputs.length - 1)].focus();
+      if (inputs.every(function (x) { return x.value; })) setTimeout(submit, 120);
+    });
+  });
+  inputs[0].focus();
+  function clearInputs() { inputs.forEach(function (x) { x.value = ''; x.classList.remove('filled'); }); inputs[0].focus(); }
+
+  var cdEl = document.getElementById('countdown');
+  function tick() {
+    var left = SP.Otp.ttlLeft();
+    if (left <= 0) { cdEl.textContent = 'รหัสหมดอายุแล้ว'; verifyBtn.disabled = true; return; }
+    verifyBtn.disabled = false;
+    var m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
+    cdEl.textContent = 'รหัสหมดอายุใน ' + m + ':' + (s < 10 ? '0' : '') + s + ' นาที';
+  }
+  function tickResend() {
+    var left = SP.Otp.canResend();
+    resendBtn.disabled = left > 0;
+    resendBtn.textContent = left > 0 ? 'ขอรหัสใหม่ได้ใน ' + Math.ceil(left / 1000) + ' วิ' : 'ขอรหัสใหม่';
+  }
+  tick(); tickResend();
+  setInterval(function () { tick(); tickResend(); }, 1000);
+
+  resendBtn.addEventListener('click', function () {
+    var r = SP.Otp.resend();
+    if (!r) { location.replace('intex7.html'); return; }
+    clearInputs(); ok('ส่งรหัสใหม่เรียบร้อยแล้ว'); deliver(r); tick(); tickResend();
+  });
+
+  function submit() {
+    var code = inputs.map(function (x) { return x.value; }).join('');
+    if (code.length < 6) { fail('กรุณากรอกรหัสให้ครบ 6 หลัก'); return; }
+    var v = SP.Otp.verify(code);
+    if (!v.ok) {
+      clearInputs();
+      if (v.reason === 'expired') fail('รหัสหมดอายุแล้ว กรุณากด “ขอรหัสใหม่”');
+      else if (v.reason === 'locked') { fail('ใส่รหัสผิดครบ ' + SP.OTP_MAX_TRY + ' ครั้ง กรุณากด “ขอรหัสใหม่”'); verifyBtn.disabled = true; }
+      else if (v.reason === 'none') location.replace('intex7.html');
+      else fail('รหัสไม่ถูกต้อง เหลือโอกาสอีก ' + v.left + ' ครั้ง');
+      return;
+    }
+    var d = v.rec.payload;
+    if (v.rec.purpose === 'register') {
+      var st = SP.stamp();
+      SP.Student.save({
+        sid: String(d.sid).trim(), name: d.name, room: d.room, no: d.no,
+        email: SP.normEmail(d.email), verified: true,
+        createdAt: st.iso, createdDate: st.date, createdTime: st.time, updatedAt: st.iso
+      });
+      if (!SP.Roster.bySid(d.sid)) SP.Roster.add({ sid: d.sid, name: d.name, room: d.room, no: d.no });
+    } else if (v.rec.purpose === 'email') {
+      var me = SP.Student.bySid(d.sid);
+      if (me) { me.email = SP.normEmail(d.email); me.updatedAt = new Date().toISOString(); SP.Student.save(me); }
+    }
+    SP.Otp.clear();
+    SP.Student.login(d.sid);
+    ok('ยืนยันตัวตนสำเร็จ กำลังเข้าสู่ระบบ...');
+    verifyBtn.disabled = true;
+    setTimeout(function () { location.replace(next); }, 700);
+  }
+  document.getElementById('otpForm').addEventListener('submit', function (e) { e.preventDefault(); submit(); });
+});
+</script>
+</body>
+</html>

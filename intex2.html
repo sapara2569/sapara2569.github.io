@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>โหวตกิจกรรมที่ชอบ | สภานักเรียนโรงเรียนร้องกวางอนุสรณ์</title>
+<link rel="icon" href="assets/logo-council.jpg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="css/stely.css">
+</head>
+<body>
+<header id="topbar" class="topbar" data-nav="student" data-active="intex2"></header>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <img class="masthead-logo" src="assets/logo-school.jpg" alt="">
+    <img class="masthead-logo" src="assets/logo-council.jpg" alt="">
+    <div class="masthead-text">
+      <strong>สภานักเรียนโรงเรียนร้องกวางอนุสรณ์</strong>
+      <span>ปีการศึกษา 2569</span>
+    </div>
+    <span class="pill">🗳️ โหวตกิจกรรม</span>
+  </div>
+</div>
+
+<main>
+<div class="wrap wrap-narrow">
+  <div class="no-storage-note">⚠️ เบราว์เซอร์นี้ปิดการเก็บข้อมูล (localStorage) ข้อมูลที่บันทึกจะหายเมื่อปิดหน้าเว็บ</div>
+
+  <div class="page-head">
+    <h1>โหวตกิจกรรมที่นักเรียนชอบ</h1>
+    <p>เลือกกิจกรรมที่อยากให้สภานักเรียนจัดขึ้น ให้คะแนนความชอบ และเสนอแนะเพิ่มเติมได้ · <span class="req">*</span> คือข้อมูลที่ต้องกรอก</p>
+  </div>
+
+  <form id="voteForm" class="card" novalidate>
+    <h3 class="card-title"><span class="dot"></span>ข้อมูลผู้ตอบ</h3>
+    <p class="card-sub">ดึงจากบัญชีที่เข้าสู่ระบบอัตโนมัติ · แก้ไขได้ที่หน้า
+      <a href="intex8.html">โปรไฟล์ของฉัน</a></p>
+
+    <div class="form-grid cols-2">
+      <div class="field locked-field">
+        <label for="name">ชื่อ - นามสกุล 🔒</label>
+        <input type="text" id="name" disabled>
+      </div>
+      <div class="field locked-field">
+        <label for="sid">รหัสนักเรียน 🔒</label>
+        <input type="text" id="sid" disabled>
+      </div>
+      <div class="field locked-field">
+        <label for="room">ชั้น 🔒</label>
+        <input type="text" id="room" disabled>
+      </div>
+      <div class="field locked-field">
+        <label for="no">เลขที่ 🔒</label>
+        <input type="text" id="no" disabled>
+      </div>
+    </div>
+    <div class="alert alert-info" id="dupBox"></div>
+
+    <hr class="section-divider">
+
+    <h3 class="card-title"><span class="dot"></span>กิจกรรม</h3>
+    <p class="card-sub">เลือกกิจกรรมที่ชอบมากที่สุด 1 กิจกรรม</p>
+    <div class="field">
+      <label for="activity">กิจกรรม <span class="req">*</span></label>
+      <select id="activity" name="activity" required>
+        <option value="">— เลือกกิจกรรม —</option>
+      </select>
+      <span class="err-msg">กรุณาเลือกกิจกรรม</span>
+    </div>
+
+    <hr class="section-divider">
+
+    <h3 class="card-title"><span class="dot"></span>ความชอบ</h3>
+    <p class="card-sub">ให้คะแนนความชอบที่มีต่อกิจกรรมที่เลือก (5 ระดับ)</p>
+    <div class="field">
+      <div class="likert" id="likeScale" role="radiogroup" aria-label="ระดับความชอบ"></div>
+      <span class="err-msg" id="likeErr" style="display:none">กรุณาเลือกระดับความชอบ</span>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="field">
+      <label for="suggest">ข้อเสนอแนะ</label>
+      <textarea id="suggest" name="suggest" placeholder="อยากให้จัดกิจกรรมแบบไหน มีอะไรอยากเสนอเพิ่มเติม เขียนได้เลย (ไม่บังคับ)"></textarea>
+      <span class="hint">ข้อเสนอแนะจะถูกส่งไปยังคณะกรรมการสภานักเรียน</span>
+    </div>
+
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">📨 ส่งแบบโหวต</button>
+      <a class="btn btn-ghost" href="intex1.html">ยกเลิก</a>
+    </div>
+  </form>
+</div>
+</main>
+
+<footer id="siteFooter" class="site-footer"></footer>
+
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/app.js"></script>
+<script>
+SP.boot(function () {
+  if (!SP.Student.guard()) return;
+  var me = SP.Student.current();
+
+  /* กรอกข้อมูลผู้ตอบอัตโนมัติจากบัญชีที่เข้าสู่ระบบ */
+  document.getElementById('name').value = me.name;
+  document.getElementById('sid').value = me.sid;
+  document.getElementById('room').value = me.room;
+  document.getElementById('no').value = me.no;
+
+  /* กิจกรรม (แถบเลื่อนลง) */
+  var actSel = document.getElementById('activity');
+  SP.ACTIVITIES.forEach(function (a) {
+    var o = document.createElement('option'); o.value = o.textContent = a; actSel.appendChild(o);
+  });
+  /* ความชอบ 5 ระดับ */
+  document.getElementById('likeScale').innerHTML = SP.LIKE_SCALE.map(function (s) {
+    return '<input type="radio" name="like" id="like' + s.v + '" value="' + s.v + '">' +
+           '<label for="like' + s.v + '"><span class="num">' + s.v + '</span>' + SP.esc(s.t) + '</label>';
+  }).join('');
+
+  function bad(id, on) {
+    var f = document.getElementById(id).closest('.field');
+    if (f) f.classList.toggle('invalid', on);
+    return !on;
+  }
+
+  /* เคยโหวตแล้วหรือยัง — โหวตใหม่จะแทนที่ของเดิม (1 คน 1 เสียง) */
+  function myVote() {
+    var a = SP.list(SP.KEY.VOTE);
+    for (var i = a.length - 1; i >= 0; i--) if (String(a[i].sid) === String(me.sid)) return a[i];
+    return null;
+  }
+  var prev = myVote();
+  if (prev) {
+    var box = document.getElementById('dupBox');
+    box.innerHTML = 'คุณเคยโหวต <strong>' + SP.esc(prev.activity) + '</strong> ไว้เมื่อ ' +
+      SP.esc(prev.date) + ' ' + SP.esc(prev.time) + ' — ถ้าส่งอีกครั้ง ระบบจะ<strong>แทนที่</strong>ผลโหวตเดิม (1 คน 1 เสียง)';
+    box.classList.add('show');
+    actSel.value = prev.activity;
+    var pl = document.getElementById('like' + prev.like);
+    if (pl) pl.checked = true;
+    if (prev.suggest) document.getElementById('suggest').value = prev.suggest;
+  }
+
+  document.getElementById('voteForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var act = actSel.value;
+    var like = document.querySelector('input[name=like]:checked');
+
+    var ok = true;
+    ok = bad('activity', !act) && ok;
+    document.getElementById('likeErr').style.display = like ? 'none' : 'block';
+    if (!like) ok = false;
+    if (!ok) {
+      SP.toast('กรุณาเลือกกิจกรรมและระดับความชอบ');
+      var first = document.querySelector('.field.invalid select');
+      if (first) first.focus();
+      return;
+    }
+
+    /* ส่งข้อมูลพร้อมวันเดือนปีและเวลาไปยังคลังข้อมูล (intex6.4) */
+    var st = SP.stamp();
+    var all = SP.list(SP.KEY.VOTE).filter(function (v) { return String(v.sid) !== String(me.sid); });
+    all.push({
+      id: 'v' + Date.now() + Math.floor(Math.random() * 999),
+      iso: st.iso, date: st.date, time: st.time,
+      sid: me.sid, name: me.name, room: me.room, no: me.no,
+      activity: act, like: +like.value,
+      suggest: document.getElementById('suggest').value.trim()
+    });
+    SP.write(SP.KEY.VOTE, all);
+    SP.go('intex2.1.html?from=vote');
+  });
+});
+</script>
+</body>
+</html>

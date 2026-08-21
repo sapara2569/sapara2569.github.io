@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>หน้าหลัก | สภานักเรียนโรงเรียนร้องกวางอนุสรณ์</title>
+<meta name="description" content="เว็บไซต์สภานักเรียนโรงเรียนร้องกวางอนุสรณ์ — โหวตกิจกรรม แบบประเมินสภาพจิตใจ และแจ้งปัญหาภายในโรงเรียน">
+<link rel="icon" href="assets/logo-council.jpg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="css/stely.css">
+</head>
+<body>
+
+<!-- แถบด้านบน หนา 30px สีม่วง (สร้างโดย app.js) -->
+<header id="topbar" class="topbar" data-nav="student" data-active="intex1"></header>
+
+<main>
+  <!-- พื้นหลังกวาง -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-badges">
+        <img src="assets/logo-school.jpg" alt="ตราโรงเรียนร้องกวางอนุสรณ์">
+        <img src="assets/logo-council.jpg" alt="ตราสภานักเรียน">
+      </div>
+      <h1>สภานักเรียนโรงเรียนร้องกวางอนุสรณ์</h1>
+      <p class="lead">เสียงของนักเรียนทุกคนคือพลังในการพัฒนาโรงเรียน ร่วมโหวตกิจกรรมที่ชอบ
+        ประเมินสภาพจิตใจ และแจ้งปัญหาที่พบภายในโรงเรียนได้ที่นี่</p>
+      <div class="hero-cta">
+        <a class="btn btn-light" href="intex2.html">🗳️ โหวตกิจกรรมที่ชอบ</a>
+        <a class="btn btn-gold" href="intex3.html">❤️ ประเมินสภาพจิตใจ</a>
+        <a class="btn btn-light" href="intex4.html">📣 แจ้งปัญหาในโรงเรียน</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="no-storage-note">⚠️ เบราว์เซอร์นี้ปิดการเก็บข้อมูล (localStorage) ข้อมูลที่บันทึกจะหายเมื่อปิดหน้าเว็บ</div>
+
+    <div class="page-head">
+      <h2>เมนูบริการนักเรียน</h2>
+      <p>เลือกหัวข้อที่ต้องการ ข้อมูลทุกอย่างจะถูกส่งไปยังคลังข้อมูลของสภานักเรียนโดยอัตโนมัติ</p>
+    </div>
+
+    <div class="grid grid-2">
+      <a class="tile" href="intex2.html">
+        <div class="ico">🗳️</div>
+        <h3>โหวตกิจกรรมที่ชอบ</h3>
+        <p>เลือกกิจกรรมที่อยากให้จัดในปีการศึกษานี้ พร้อมให้คะแนนความชอบ 5 ระดับ และเสนอแนะเพิ่มเติม</p>
+        <span class="go">เข้าสู่หน้าโหวต →</span>
+      </a>
+      <a class="tile" href="intex3.html">
+        <div class="ico">❤️</div>
+        <h3>แบบประเมินสภาพจิตใจ</h3>
+        <p>แบบคัดกรอง 10 ข้อ ใช้เวลาไม่เกิน 3 นาที ทราบผลและได้รับคำแนะนำทันทีหลังส่ง</p>
+        <span class="go">เริ่มทำแบบประเมิน →</span>
+      </a>
+      <a class="tile" href="intex4.html">
+        <div class="ico">📣</div>
+        <h3>รายงานปัญหาภายในโรงเรียน</h3>
+        <p>แจ้งปัญหาที่พบและระบุสถานที่ เพื่อให้สภานักเรียนรวบรวมเสนอต่อฝ่ายบริหาร</p>
+        <span class="go">แจ้งปัญหา →</span>
+      </a>
+      <!-- <a class="tile" href="intex5.html">
+        <div class="ico">🔐</div>
+        <h3>เข้าสู่ระบบแอดมิน</h3>
+        <p>สำหรับคณะกรรมการสภานักเรียนและครูที่ปรึกษา เพื่อดูคลังข้อมูล งบประมาณ และรายงานสรุป</p>
+        <span class="go">เข้าสู่ระบบ →</span>
+      </a> -->
+    </div>
+
+    <div class="card mt-2">
+      <h3 class="card-title"><span class="dot"></span>ภาพรวมการมีส่วนร่วม</h3>
+      <p class="card-sub">นับจากข้อมูลที่บันทึกไว้ในเครื่องนี้</p>
+      <div class="grid grid-3" id="quickStats"></div>
+    </div>
+
+    <div class="card rate-card mt-2">
+      <h3 class="card-title"><span class="dot"></span>ให้คะแนนเว็บไซต์สภานักเรียน</h3>
+      <p class="card-sub">ความเห็นของคุณช่วยให้เราปรับปรุงเว็บไซต์ให้ใช้งานง่ายขึ้น · 1 คน ให้คะแนนได้ 1 ครั้ง (แก้ไขได้)</p>
+
+      <div class="grid grid-2" style="align-items:start">
+        <form id="rateForm" novalidate>
+          <div class="field">
+            <label style="margin-bottom:4px">ให้คะแนนความพึงพอใจ <span class="req">*</span></label>
+            <div class="stars" id="stars" role="radiogroup" aria-label="ให้คะแนน 1 ถึง 5 ดาว"></div>
+            <span class="hint" id="starText">ยังไม่ได้ให้คะแนน</span>
+            <span class="err-msg" id="starErr" style="display:none">กรุณาเลือกจำนวนดาว</span>
+          </div>
+          <div class="field">
+            <label for="rComment">ข้อเสนอแนะเพิ่มเติม</label>
+            <textarea id="rComment" style="min-height:82px" placeholder="อยากให้ปรับปรุงตรงไหน หรือชอบอะไรเป็นพิเศษ (ไม่บังคับ)"></textarea>
+          </div>
+          <div class="btn-row" style="margin-top:12px">
+            <button type="submit" class="btn btn-primary btn-sm" id="rateBtn">ส่งคะแนน</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="rateClear" style="display:none">ลบคะแนนของฉัน</button>
+          </div>
+          <div class="alert alert-ok" id="rateOk" style="margin-top:12px"></div>
+        </form>
+
+        <div>
+          <div class="card-sub" style="margin-bottom:10px">คะแนนรวมจากนักเรียนทุกคน</div>
+          <div class="rate-summary" id="rateSummary"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer id="siteFooter" class="site-footer"></footer>
+
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/app.js"></script>
+<script>
+SP.boot(function () {
+  if (!SP.Student.guard()) return;
+  var me = SP.Student.current();
+  var hero = document.querySelector('.hero .lead');
+  if (hero && me) {
+    hero.insertAdjacentHTML('beforebegin',
+      '<p class="lead" style="margin-bottom:.35em"><strong>สวัสดี ' + SP.esc(me.name) + '</strong> · ' +
+      SP.esc(me.room) + ' เลขที่ ' + SP.esc(me.no) + '</p>');
+  }
+  var stats = [
+    { ico: '🗳️', label: 'จำนวนการโหวตกิจกรรม', n: SP.list(SP.KEY.VOTE).length, unit: 'ครั้ง' },
+    { ico: '❤️', label: 'ผู้ทำแบบประเมินสภาพจิตใจ', n: SP.list(SP.KEY.MENTAL).length, unit: 'คน' },
+    { ico: '📣', label: 'ปัญหาที่ได้รับแจ้ง', n: SP.list(SP.KEY.PROBLEM).length, unit: 'รายการ' }
+  ];
+  document.getElementById('quickStats').innerHTML = stats.map(function (s) {
+    return '<div class="stat"><h3>' + s.ico + ' ' + SP.esc(s.label) + '</h3>' +
+      '<div class="headline">' + SP.fmtNum(s.n) + ' <span style="font-size:.95rem;font-weight:600;color:var(--ink-muted)">' + s.unit + '</span></div></div>';
+  }).join('');
+
+  /* ================= ให้คะแนนเว็บไซต์ ================= */
+  var LABELS = { 1: 'ต้องปรับปรุงมาก', 2: 'ต้องปรับปรุง', 3: 'พอใช้', 4: 'ดี', 5: 'ดีมาก' };
+  var starsHost = document.getElementById('stars'),
+      starText = document.getElementById('starText'),
+      starErr = document.getElementById('starErr'),
+      rComment = document.getElementById('rComment'),
+      rateOk = document.getElementById('rateOk'),
+      rateBtn = document.getElementById('rateBtn'),
+      rateClear = document.getElementById('rateClear');
+
+  /* direction:rtl ใน .stars ทำให้ต้องเรียงจาก 5 ลง 1 */
+  starsHost.innerHTML = [5, 4, 3, 2, 1].map(function (v) {
+    return '<input type="radio" name="stars" id="star' + v + '" value="' + v + '">' +
+      '<label for="star' + v + '" title="' + v + ' ดาว — ' + LABELS[v] + '" aria-label="' + v + ' ดาว"></label>';
+  }).join('');
+
+  function setStars(v) {
+    var el = document.getElementById('star' + v);
+    if (el) { el.checked = true; starText.textContent = v + ' ดาว — ' + LABELS[v]; }
+  }
+  starsHost.addEventListener('change', function (e) {
+    starErr.style.display = 'none';
+    setStars(+e.target.value);
+  });
+
+  function paintSummary() {
+    var st = SP.Rating.stats();
+    var host = document.getElementById('rateSummary');
+    if (!st.n) {
+      host.innerHTML = '<div class="empty-state" style="padding:18px"><span class="big">⭐</span>ยังไม่มีใครให้คะแนน — เป็นคนแรกได้เลย</div>';
+      return;
+    }
+    var full = Math.round(st.avg);
+    var starStr = '';
+    for (var i = 1; i <= 5; i++) starStr += '<span class="' + (i <= full ? '' : 'off') + '">★</span>';
+    host.innerHTML =
+      '<div><div class="rate-big">' + st.avg.toFixed(2) + '</div>' +
+        '<div class="stars-static">' + starStr + '</div>' +
+        '<div class="text-muted" style="font-size:.82rem;margin-top:4px">จาก ' + st.n + ' คน</div></div>' +
+      '<div class="rate-bars">' + [5, 4, 3, 2, 1].map(function (v) {
+        var c = st.counts[v - 1], pct = st.n ? c / st.n * 100 : 0;
+        return '<div class="rb"><span class="lab">' + v + '★</span>' +
+          '<span class="track"><span style="width:' + pct.toFixed(1) + '%"></span></span>' +
+          '<span class="cnt">' + c + '</span></div>';
+      }).join('') + '</div>';
+  }
+
+  function loadMine() {
+    var r = SP.Rating.mine(me.sid);
+    if (r) {
+      setStars(r.stars);
+      rComment.value = r.comment || '';
+      rateBtn.textContent = 'อัปเดตคะแนน';
+      rateClear.style.display = '';
+      rateOk.textContent = 'คุณให้คะแนนไว้แล้วเมื่อ ' + r.date + ' — แก้ไขได้ตลอด';
+      rateOk.classList.add('show');
+    } else {
+      rateBtn.textContent = 'ส่งคะแนน';
+      rateClear.style.display = 'none';
+      rateOk.classList.remove('show');
+    }
+  }
+
+  document.getElementById('rateForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var sel = document.querySelector('input[name=stars]:checked');
+    if (!sel) { starErr.style.display = 'block'; SP.toast('กรุณาเลือกจำนวนดาว'); return; }
+    var st = SP.stamp();
+    SP.Rating.put({
+      id: 'r' + Date.now(), sid: me.sid, name: me.name, room: me.room,
+      stars: +sel.value, comment: rComment.value.trim(),
+      iso: st.iso, date: st.date, time: st.time
+    });
+    SP.toast('ขอบคุณสำหรับคะแนน');
+    loadMine(); paintSummary();
+  });
+
+  rateClear.addEventListener('click', function () {
+    if (!confirm('ลบคะแนนที่คุณเคยให้ไว้?')) return;
+    SP.Rating.remove(me.sid);
+    document.querySelectorAll('input[name=stars]').forEach(function (x) { x.checked = false; });
+    rComment.value = '';
+    starText.textContent = 'ยังไม่ได้ให้คะแนน';
+    SP.toast('ลบคะแนนแล้ว');
+    loadMine(); paintSummary();
+  });
+
+  loadMine(); paintSummary();
+});
+</script>
+</body>
+</html>

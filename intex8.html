@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>โปรไฟล์ของฉัน | สภานักเรียนโรงเรียนร้องกวางอนุสรณ์</title>
+<link rel="icon" href="assets/logo-council.jpg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="css/stely.css">
+</head>
+<body>
+<header id="topbar" class="topbar" data-nav="student" data-active="intex8"></header>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <img class="masthead-logo" src="assets/logo-school.jpg" alt="">
+    <img class="masthead-logo" src="assets/logo-council.jpg" alt="">
+    <div class="masthead-text">
+      <strong>สภานักเรียนโรงเรียนร้องกวางอนุสรณ์</strong>
+      <span>ปีการศึกษา 2569</span>
+    </div>
+    <span class="pill">👤 โปรไฟล์</span>
+  </div>
+</div>
+
+<main>
+<div class="wrap wrap-narrow">
+  <div class="profile-head">
+    <div class="avatar" id="avatar">—</div>
+    <div>
+      <h1 id="pName">—</h1>
+      <div class="meta" id="pMeta">—</div>
+    </div>
+    <div class="right" id="pSince"></div>
+  </div>
+
+  <div class="card mt-2">
+    <h3 class="card-title"><span class="dot"></span>รูปโปรไฟล์</h3>
+    <p class="card-sub">อัปโหลดรูปของตัวเอง ระบบจะย่อขนาดให้อัตโนมัติ (ไม่บังคับ)</p>
+    <div class="avatar-edit">
+      <div class="avatar-lg" id="avatarBig">—</div>
+      <div class="avatar-actions">
+        <label class="btn btn-primary btn-sm" for="avatarFile" style="cursor:pointer">เลือกรูปภาพ</label>
+        <input type="file" id="avatarFile" accept="image/*" hidden>
+        <button type="button" class="btn btn-danger btn-sm" id="avatarRm" style="display:none">ลบรูป</button>
+        <span class="hint" id="avatarInfo">รองรับ JPG, PNG, WEBP · ไฟล์ไม่เกิน 12 MB</span>
+      </div>
+    </div>
+    <div class="alert alert-err" id="avatarErr" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card mt-2">
+    <h3 class="card-title"><span class="dot"></span>แก้ไขข้อมูลของฉัน</h3>
+    <p class="card-sub">รหัสนักเรียนแก้ไขไม่ได้ · เปลี่ยนอีเมลต้องยืนยันด้วยรหัส OTP อีกครั้ง</p>
+
+    <div class="alert alert-ok" id="okBox"></div>
+    <div class="alert alert-err" id="errBox"></div>
+
+    <form id="profileForm" novalidate>
+      <div class="form-grid cols-2">
+        <div class="field span-2">
+          <label for="f-name">ชื่อ - นามสกุล <span class="req">*</span></label>
+          <input type="text" id="f-name" required>
+          <span class="err-msg">กรุณากรอกชื่อ - นามสกุล</span>
+        </div>
+        <div class="field locked-field">
+          <label for="f-sid">รหัสนักเรียน 🔒</label>
+          <input type="text" id="f-sid" disabled>
+          <span class="hint">แก้ไขไม่ได้ — ติดต่อครูที่ปรึกษาหากไม่ถูกต้อง</span>
+        </div>
+        <div class="field">
+          <label for="f-room">ชั้น <span class="req">*</span></label>
+          <select id="f-room" required></select>
+        </div>
+        <div class="field">
+          <label for="f-no">เลขที่ <span class="req">*</span></label>
+          <input type="number" id="f-no" min="1" max="60" required>
+          <span class="err-msg">กรุณากรอกเลขที่ (1-60)</span>
+        </div>
+        <div class="field">
+          <label for="f-email">อีเมล <span class="req">*</span></label>
+          <input type="email" id="f-email" required>
+          <span class="err-msg" id="emailErr">กรุณากรอกอีเมลให้ถูกต้อง</span>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button type="submit" class="btn btn-primary">บันทึกการเปลี่ยนแปลง</button>
+        <a class="btn btn-ghost" href="intex1.html">กลับหน้าหลัก</a>
+        <button type="button" class="btn btn-danger btn-sm" id="logoutBtn" style="margin-left:auto">ออกจากระบบ</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card mt-2">
+    <h3 class="card-title"><span class="dot"></span>ประวัติการมีส่วนร่วมของฉัน</h3>
+    <p class="card-sub">เฉพาะข้อมูลที่ส่งด้วยรหัสนักเรียนนี้</p>
+    <div class="grid grid-2">
+      <div>
+        <h4 style="font-size:.95rem;color:var(--brand-800);margin-bottom:8px">🗳️ การโหวตกิจกรรม</h4>
+        <ul class="mini-list" id="myVotes"></ul>
+      </div>
+      <div>
+        <h4 style="font-size:.95rem;color:var(--brand-800);margin-bottom:8px">💚 แบบประเมินสภาพจิตใจ</h4>
+        <ul class="mini-list" id="myMental"></ul>
+      </div>
+    </div>
+    <hr class="section-divider">
+    <h4 style="font-size:.95rem;color:var(--brand-800);margin-bottom:8px">📣 ปัญหาที่แจ้ง</h4>
+    <ul class="mini-list" id="myProblems"></ul>
+    <div class="btn-row" style="margin-top:14px">
+      <a class="btn btn-ghost btn-sm" href="intex9.html">ดูสถานะการแจ้งทั้งหมด</a>
+    </div>
+  </div>
+</div>
+</main>
+
+<footer id="siteFooter" class="site-footer"></footer>
+
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/app.js"></script>
+<script>
+SP.boot(function () {
+  if (!SP.Student.guard()) return;
+  var me = SP.Student.current();
+
+  var roomSel = document.getElementById('f-room');
+  SP.ROOMS.forEach(function (r) { var o = document.createElement('option'); o.value = o.textContent = r; roomSel.appendChild(o); });
+
+  function paintHead() {
+    var n = String(me.name || '').trim().replace(/^(เด็กชาย|เด็กหญิง|นาย|นางสาว|นาง)/, '');
+    var initial = (n[0] || '?').toUpperCase();
+    var av = document.getElementById('avatar');
+    var big = document.getElementById('avatarBig');
+    av.innerHTML = me.photo ? '<img data-photo="' + SP.esc(me.photo) + '" alt="รูปโปรไฟล์">' : SP.esc(initial);
+    big.innerHTML = me.photo ? '<img data-photo="' + SP.esc(me.photo) + '" alt="รูปโปรไฟล์">' : SP.esc(initial);
+    SP.Img.paintAll(document.body);
+    document.getElementById('avatarRm').style.display = me.photo ? '' : 'none';
+    document.getElementById('avatarInfo').textContent = me.photo
+      ? 'มีรูปโปรไฟล์แล้ว · กดเลือกรูปภาพเพื่อเปลี่ยน'
+      : 'รองรับ JPG, PNG, WEBP · ไฟล์ไม่เกิน 20 MB';
+    document.getElementById('pName').textContent = me.name;
+    document.getElementById('pMeta').textContent =
+      'รหัส ' + me.sid + ' · ' + me.room + ' เลขที่ ' + me.no + ' · ' + me.email;
+    document.getElementById('pSince').innerHTML =
+      me.createdDate ? 'ลงทะเบียนเมื่อ<br>' + SP.esc(me.createdDate) : '';
+  }
+  function fillForm() {
+    document.getElementById('f-name').value = me.name || '';
+    document.getElementById('f-sid').value = me.sid || '';
+    roomSel.value = me.room || '';
+    document.getElementById('f-no').value = me.no || '';
+    document.getElementById('f-email').value = me.email || '';
+  }
+  paintHead(); fillForm();
+
+  /* ---- รูปโปรไฟล์ ---- */
+  var avErr = document.getElementById('avatarErr');
+  function avFail(m) {
+    avErr.textContent = '❌ ' + m; avErr.classList.add('show');
+    setTimeout(function () { avErr.classList.remove('show'); }, 6000);
+  }
+  document.getElementById('avatarFile').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    this.value = '';
+    if (!f) return;
+    avErr.classList.remove('show');
+    document.getElementById('avatarInfo').textContent = 'กำลังย่อรูป...';
+    var oldRef = me.photo;
+    SP.prepareImage(f, 512, 0.82).then(function (r) {
+      return SP.Img.put(r.blob)['catch'](function () {
+        return new Promise(function (res) {
+          var fr2 = new FileReader();
+          fr2.onload = function () { res(String(fr2.result)); };
+          fr2.onerror = function () { res(''); };
+          fr2.readAsDataURL(r.blob);
+        });
+      });
+    }).then(function (ref) {
+      if (!ref) { avFail('บันทึกรูปไม่สำเร็จ'); paintHead(); return; }
+      me.photo = ref;
+      me.updatedAt = new Date().toISOString();
+      if (!SP.Student.save(me)) { avFail('บันทึกไม่สำเร็จ — พื้นที่จัดเก็บของเบราว์เซอร์อาจเต็ม'); return; }
+      if (oldRef && String(oldRef).indexOf('data:') !== 0) SP.Img.del(oldRef);
+      paintHead();
+      SP.toast('เปลี่ยนรูปโปรไฟล์แล้ว');
+    })['catch'](function (err) { avFail(err.message); paintHead(); });
+  });
+  document.getElementById('avatarRm').addEventListener('click', function () {
+    if (!confirm('ลบรูปโปรไฟล์ของคุณ?')) return;
+    if (me.photo && String(me.photo).indexOf('data:') !== 0) SP.Img.del(me.photo);
+    delete me.photo;
+    me.updatedAt = new Date().toISOString();
+    SP.Student.save(me); paintHead(); SP.toast('ลบรูปแล้ว');
+  });
+
+  var okBox = document.getElementById('okBox'), errBox = document.getElementById('errBox');
+  function showOk(m) { okBox.textContent = '✅ ' + m; okBox.classList.add('show'); errBox.classList.remove('show'); }
+  function showErr(m) { errBox.textContent = '❌ ' + m; errBox.classList.add('show'); okBox.classList.remove('show'); }
+  function mark(id, on) {
+    var f = document.getElementById(id).closest('.field');
+    if (f) f.classList.toggle('invalid', on);
+    return !on;
+  }
+
+  document.getElementById('profileForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = document.getElementById('f-name').value.trim();
+    var room = roomSel.value;
+    var no = document.getElementById('f-no').value.trim();
+    var email = document.getElementById('f-email').value.trim();
+
+    var ok = true;
+    ok = mark('f-name', !name) && ok;
+    ok = mark('f-room', !room) && ok;
+    ok = mark('f-no', !no || +no < 1 || +no > 60) && ok;
+    ok = mark('f-email', !SP.validEmail(email)) && ok;
+    if (!ok) { showErr('กรุณากรอกข้อมูลให้ถูกต้อง'); return; }
+
+    var emailChanged = SP.normEmail(email) !== SP.normEmail(me.email);
+    if (emailChanged) {
+      var dup = SP.Student.byEmail(email);
+      if (dup && String(dup.sid) !== String(me.sid)) {
+        document.getElementById('emailErr').textContent = 'อีเมลนี้ถูกใช้กับรหัสนักเรียน ' + dup.sid + ' แล้ว';
+        mark('f-email', true); showErr('อีเมลนี้ถูกใช้ลงทะเบียนไปแล้ว'); return;
+      }
+    }
+
+    /* บันทึกข้อมูลอื่นก่อน */
+    me.name = name; me.room = room; me.no = no;
+    me.updatedAt = new Date().toISOString();
+    SP.Student.save(me);
+    paintHead();
+
+    if (emailChanged) {
+      SP.Otp.issue('email', { sid: me.sid, email: email, name: me.name });
+      showOk('บันทึกแล้ว — กำลังพาไปยืนยันอีเมลใหม่ด้วยรหัส OTP');
+      setTimeout(function () { SP.go('intex7.1.html?next=' + encodeURIComponent('intex8.html')); }, 800);
+      return;
+    }
+    showOk('บันทึกข้อมูลเรียบร้อยแล้ว');
+    SP.toast('บันทึกข้อมูลเรียบร้อย');
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', function () {
+    if (!confirm('ต้องการออกจากระบบใช่หรือไม่?')) return;
+    SP.Student.logout();
+    location.href = 'intex7.html?out=1';
+  });
+
+  /* ---- ประวัติ ---- */
+  function renderList(hostId, items, emptyText) {
+    var host = document.getElementById(hostId);
+    host.innerHTML = items.length ? items.join('')
+      : '<li style="color:var(--ink-muted);border:0">' + SP.esc(emptyText) + '</li>';
+  }
+  var mySid = String(me.sid);
+  renderList('myVotes', SP.list(SP.KEY.VOTE)
+    .filter(function (v) { return String(v.sid) === mySid; })
+    .sort(function (a, b) { return (b.iso || '').localeCompare(a.iso || ''); })
+    .map(function (v) {
+      return '<li><span>' + SP.esc(v.activity) + '</span>' +
+        '<span class="tag">ชอบ ' + v.like + '/5</span>' +
+        '<span class="when">' + SP.esc(v.date) + '</span></li>';
+    }), 'ยังไม่เคยโหวตกิจกรรม');
+
+  renderList('myProblems', SP.list(SP.KEY.PROBLEM)
+    .filter(function (r) { return String(r.sid) === mySid; })
+    .sort(function (a, b) { return (b.iso || '').localeCompare(a.iso || ''); })
+    .map(function (r) {
+      var st = SP.statusOf(r.status || 'wait');
+      var sv = SP.severityOf(r.severity || 3);
+      return '<li><span>' + SP.esc(r.problem) + '</span>' +
+        '<span class="sev-badge ' + sv.cls + '" style="font-size:.72rem;padding:2px 9px">' + SP.esc(sv.name) + '</span>' +
+        '<span class="status-pill ' + st.cls + '" style="font-size:.72rem;padding:2px 9px">' + st.ico + ' ' + SP.esc(st.name) + '</span>' +
+        '<span class="when">' + SP.esc(r.date) + '</span></li>';
+    }), 'ยังไม่เคยแจ้งปัญหา');
+
+  renderList('myMental', SP.list(SP.KEY.MENTAL)
+    .filter(function (m) { return String(m.sid) === mySid; })
+    .sort(function (a, b) { return (b.iso || '').localeCompare(a.iso || ''); })
+    .map(function (m) {
+      var L = SP.LEVELS[(+m.level || 1) - 1];
+      return '<li><span class="level-badge ' + L.cls + '" style="font-size:.74rem;padding:2px 9px">' +
+        SP.esc(L.short) + '</span>' +
+        '<span class="when">' + SP.esc(m.date) + '</span></li>';
+    }), 'ยังไม่เคยทำแบบประเมิน');
+});
+</script>
+</body>
+</html>

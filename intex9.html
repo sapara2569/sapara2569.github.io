@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สถานะการแจ้งปัญหา | สภานักเรียนโรงเรียนร้องกวางอนุสรณ์</title>
+<link rel="icon" href="assets/logo-council.jpg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="css/stely.css">
+</head>
+<body>
+<header id="topbar" class="topbar" data-nav="student" data-active="intex9"></header>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <img class="masthead-logo" src="assets/logo-school.jpg" alt="">
+    <img class="masthead-logo" src="assets/logo-council.jpg" alt="">
+    <div class="masthead-text">
+      <strong>สภานักเรียนโรงเรียนร้องกวางอนุสรณ์</strong>
+      <span>ปีการศึกษา 2569</span>
+    </div>
+    <span class="pill">🔎 สถานะการแจ้ง</span>
+  </div>
+</div>
+
+<main>
+<div class="wrap">
+  <div class="page-head">
+    <h1>สถานะปัญหาที่คุณแจ้ง</h1>
+    <p>ติดตามความคืบหน้าของเรื่องที่คุณส่งเข้ามา สภานักเรียนจะอัปเดตสถานะให้เมื่อมีความคืบหน้า</p>
+  </div>
+
+  <div class="grid grid-3" id="counts" style="margin-bottom:20px"></div>
+
+  <div class="card">
+    <div class="table-tools">
+      <div class="search-box"><input type="text" id="search" placeholder="ค้นหาปัญหา / สถานที่"></div>
+      <select id="fStatus" style="max-width:210px"><option value="">ทุกสถานะ</option></select>
+      <select id="fSev" style="max-width:230px"><option value="">ทุกระดับความร้ายแรง</option></select>
+      <span class="spacer"></span>
+      <a class="btn btn-primary btn-sm" href="intex4.html">แจ้งปัญหาใหม่</a>
+    </div>
+  </div>
+
+  <div id="cases" style="margin-top:18px"></div>
+</div>
+</main>
+
+<footer id="siteFooter" class="site-footer"></footer>
+
+<div class="lightbox" id="lightbox"><button class="close" aria-label="ปิด">✕</button><img alt="รูปภาพประกอบ"></div>
+
+<script src="js/config.js"></script>
+<script src="js/db.js"></script>
+<script src="js/app.js"></script>
+<script>
+SP.boot(function () {
+  if (!SP.Student.guard()) return;
+  var me = SP.Student.current();
+
+  var fStatus = document.getElementById('fStatus'), fSev = document.getElementById('fSev'),
+      search = document.getElementById('search'), host = document.getElementById('cases');
+
+  SP.STATUSES.forEach(function (s) {
+    var o = document.createElement('option'); o.value = s.k; o.textContent = s.ico + ' ' + s.name; fStatus.appendChild(o);
+  });
+  SP.SEVERITIES.forEach(function (s) {
+    var o = document.createElement('option'); o.value = s.n; o.textContent = 'ระดับ ' + s.n + ' · ' + s.name; fSev.appendChild(o);
+  });
+
+  function mine() {
+    return SP.list(SP.KEY.PROBLEM)
+      .filter(function (r) { return String(r.sid) === String(me.sid); })
+      .sort(function (a, b) { return (b.iso || '').localeCompare(a.iso || ''); });
+  }
+
+  function sevDots(n) {
+    var out = '';
+    for (var i = 1; i <= 5; i++) out += '<i class="' + (i <= n ? 'on' : '') + '"></i>';
+    return '<span class="sev-dots">' + out + '</span>';
+  }
+
+  function timeline(rec) {
+    var order = SP.STATUSES.map(function (s) { return s.k; });
+    var curIdx = order.indexOf(rec.status || 'wait');
+    var hist = rec.history || [];
+    return '<ul class="tl">' + SP.STATUSES.map(function (s, i) {
+      var h = null;
+      for (var k = hist.length - 1; k >= 0; k--) if (hist[k].status === s.k) { h = hist[k]; break; }
+      var cls = i < curIdx ? 'on' : (i === curIdx ? 'cur' : '');
+      return '<li class="' + cls + '">' +
+        '<div class="t-name">' + s.ico + ' ' + SP.esc(s.name) + '</div>' +
+        '<div class="t-when">' + (h ? SP.esc(h.date + ' ' + h.time) + (h.by ? ' · โดย ' + SP.esc(h.by) : '') : '—') + '</div>' +
+        (h && h.note ? '<div class="t-when">“' + SP.esc(h.note) + '”</div>' : '') +
+        '</li>';
+    }).join('') + '</ul>';
+  }
+
+  function render() {
+    var all = mine();
+    var q = (search.value || '').trim().toLowerCase();
+    var view = all.filter(function (r) {
+      if (fStatus.value && (r.status || 'wait') !== fStatus.value) return false;
+      if (fSev.value && String(r.severity || 3) !== fSev.value) return false;
+      if (!q) return true;
+      return ((r.problem || '') + ' ' + (r.place || '') + ' ' + (r.detail || '')).toLowerCase().indexOf(q) > -1;
+    });
+
+    /* สรุปจำนวนตามสถานะ */
+    document.getElementById('counts').innerHTML = SP.STATUSES.map(function (s) {
+      var n = all.filter(function (r) { return (r.status || 'wait') === s.k; }).length;
+      return '<div class="stat"><h3>' + s.ico + ' ' + SP.esc(s.name) + '</h3>' +
+        '<div class="headline" style="margin:0">' + n +
+        ' <span style="font-size:.9rem;font-weight:600;color:var(--ink-muted)">เรื่อง</span></div></div>';
+    }).join('');
+
+    if (!view.length) {
+      host.innerHTML = '<div class="card"><div class="empty-state"><span class="big">📭</span>' +
+        (all.length ? 'ไม่พบเรื่องที่ค้นหา' :
+          'คุณยังไม่เคยแจ้งปัญหา — <a href="intex4.html">แจ้งปัญหาแรกของคุณ</a>') + '</div></div>';
+      return;
+    }
+
+    host.innerHTML = view.map(function (r) {
+      var st = SP.statusOf(r.status || 'wait');
+      var sv = SP.severityOf(r.severity || 3);
+      var photos = (r.photos || []).map(function (ref, i) {
+        return '<div class="thumb thumb-sm"><img data-photo="' + SP.esc(ref) + '" alt="รูปที่ ' + (i + 1) + '"></div>';
+      }).join('');
+      return '<article class="case">' +
+        '<div class="case-head">' +
+          '<h3>' + SP.esc(r.problem) + '</h3>' +
+          '<span class="status-pill ' + st.cls + '">' + st.ico + ' ' + SP.esc(st.name) + '</span>' +
+          '<span class="sev-badge ' + sv.cls + '">' + sevDots(sv.n) + ' ' + SP.esc(sv.name) + '</span>' +
+        '</div>' +
+        '<div class="case-meta">' +
+          '<span>📍 ' + SP.esc(r.place) + '</span>' +
+          '<span>🗓️ แจ้งเมื่อ ' + SP.esc(r.date) + ' ' + SP.esc(r.time) + '</span>' +
+        '</div>' +
+        (r.detail ? '<div class="note">' + SP.esc(r.detail) + '</div>' : '') +
+        '<div class="case-body">' +
+          '<div>' + timeline(r) + '</div>' +
+          (photos ? '<div><div class="card-sub" style="margin-bottom:8px">รูปภาพประกอบ</div>' +
+                    '<div class="thumb-row">' + photos + '</div></div>' : '') +
+        '</div>' +
+        '</article>';
+    }).join('');
+
+    SP.Img.paintAll(host);
+  }
+
+  var lb = document.getElementById('lightbox');
+  host.addEventListener('click', function (e) {
+    var im = e.target.closest('.thumb img');
+    if (!im) return;
+    lb.querySelector('img').src = im.src; lb.classList.add('show');
+  });
+  lb.addEventListener('click', function () { lb.classList.remove('show'); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') lb.classList.remove('show'); });
+
+  search.addEventListener('input', render);
+  fStatus.addEventListener('change', render);
+  fSev.addEventListener('change', render);
+  render();
+
+  SP.onSync(render);
+});
+</script>
+</body>
+</html>
