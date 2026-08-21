@@ -1,7 +1,0 @@
-node_modules/
-.vercel/
-.DS_Store
-*.log
-
-# ห้าม commit ไฟล์สำรองข้อมูลจริงของนักเรียนขึ้น GitHub
-sapara-backup*.json
